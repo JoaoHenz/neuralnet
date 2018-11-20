@@ -21,6 +21,7 @@ Created on Tue Nov 13 14:18:34 2018
 import pandas as pd
 import numpy as np
 
+
 # =============================================================================
 # K-fold Estratificado
 # Retorna uma lista, cada item sendo um dataframe (fold)
@@ -83,7 +84,7 @@ class Neural(object):
         
         self.num_hidden_layers = 1
         self.num_layers = self.num_hidden_layers + 2
-        self.num_nodes_per_layer = [2]*(self.num_hidden_layers + 2)
+        self.num_nodes_per_layer = [2]*(self.num_layers)
         self.num_nodes_per_layer[0] = self.num_input_nodes
         self.num_nodes_per_layer[-1] = self.num_output_nodes
                 
@@ -104,6 +105,7 @@ class Neural(object):
         matrix_activation_list.append(input_activation)
         matrix_weight_list.append(np.random.rand(self.num_nodes_per_layer[1], self.num_nodes_per_layer[0]))
         matrix_gradient_list.append(np.random.rand(self.num_nodes_per_layer[1], self.num_nodes_per_layer[0]))
+        matrix_error_list.append(np.array([[np.nan]]))
         
         # Hidden Layers
         for i in (range(self.num_layers))[1:-1]:
@@ -122,6 +124,8 @@ class Neural(object):
         
         # Output Layer
         matrix_activation_list.append(np.random.rand(self.num_nodes_per_layer[-1], 1))
+        matrix_weight_list.append(np.array([[np.nan]]))
+        matrix_gradient_list.append(np.array([[np.nan]]))
         matrix_error_list.append(np.zeros((self.num_nodes_per_layer[-1], 1)))
         
         
@@ -132,8 +136,8 @@ class Neural(object):
     def sigmoid(self, x):
         return 1.0/(1+ np.exp(-x))
 
-    def sigmoid_derivative(self, x):
-        return x * (1.0 - x)
+#    def sigmoid_derivative(self, x):
+#        return x * (1.0 - x)
     
     def feedforward(self):
         # Input Layer - Coloca o vetor de entrada "i" como sendo a matriz de ativação da camada 0
@@ -144,6 +148,8 @@ class Neural(object):
             self.activations[layer_i+1] = self.sigmoid(np.dot(self.weights[layer_i], self.activations[layer_i]))
     
     def backpropagation(self):
+        # TO-DO: incompleto
+        
         # Cálculo dos deltas
         # Camada de saída
         predict = self.activations[-1]
@@ -165,51 +171,42 @@ class Neural(object):
             part1 = np.dot(weights_transposed, self.errors[layer_i+1])
             part2 = np.multiply(self.activations[layer_i], (1-self.activations[layer_i]))
             self.errors[layer_i] = np.multiply(part1, part2)
-        
-        def print():
-            pass
-        
-#n = Neural() 
-#n.initiliaze_structure()
-##n.feedforward()
-#n.backpropagation()
-
-
-#x = np.array([[2, 3], [4, 5]])
-#y = np.dot(x, x)
-#y = -np.multiply(x,x)+x
-
-
-#df1 = pd.DataFrame({'A': ['A0', 'A1', 'A2', 'A3'],
-#                    'B': ['B0', 'B1', 'B2', 'B3'],
-#                    'C': ['C0', 'C1', 'C2', 'C3'],
-#                    'D': ['D0', 'D1', 'D2', 'D3']},
-#                    index=[0, 1, 2, 3])
-
-df2 = pd.DataFrame({'E': ['A0', 'A1', 'A2', 'A3'],
-                    'F': ['B0', 'B1', 'B2', 'B3'],
-                    'G': ['C0', 'C1', 'C2', 'C3'],
-                    'H': ['D0', 'D1', 'D2', 'D3']},
-                    index=[0, 1, 2, 3])
-
-
-new_matrix_gradient = np.random.rand(2, 4)
-np.savetxt('test.out', new_matrix_gradient, delimiter='    ', fmt='%1.4e')
-np.savetxt('test.out', new_matrix_gradient, delimiter='    ', fmt='%1.4e')
-df1 = pd.DataFrame(new_matrix_gradient)
-
-dfs = [df1, df2]
-df = pd.concat(dfs, axis = 0)
-
-f = open("test.out", "a")
-np.savetxt(f, new_matrix_gradient, delimiter='    ', fmt='%1.4e')
-f.write('\n')
-np.savetxt(f, new_matrix_gradient, delimiter='    ', fmt='%1.4e')
-f.write('\n')
-np.savetxt(f, new_matrix_gradient, delimiter='    ', fmt='%1.4e')
-f.write('\n')
-f.close()
     
+    # =============================================================================
+    # Salva a estrutura e informações da rede em um arquivo txt    
+    # =============================================================================
+    def save_to_txt(self, filename):
+        f = open(filename, "a")
+        f.write("### Informações da Rede Neural ###\n\n")
+        f.write('Quantidade de Inputs: ' + str(self.num_nodes_per_layer[0]) + "\n")
+        f.write('Quantidade de Hidden Layers: ' + str(self.num_hidden_layers) + "\n")
+        f.write('Quantidade Total de Layers: ' + str(self.num_layers) + "\n")
+        f.write('Quantidade de Outputs: ' + str(self.num_nodes_per_layer[-1]) + "\n\n")
+        
+        f.write('Quantidade de Nodos por Layer: \n')
+        
+        for layer in range(self.num_layers):
+            f.write('\t-> Layer ' + str(layer) + ': ' + str(self.num_nodes_per_layer[layer]) + "\n")
+        
+        f.write('\n\nMatrizes de cada Layer: \n\n')
+        
+        for layer in range(self.num_layers):
+            if layer != 0:
+                f.write('\n\n#################################\n')
+            f.write('\n-> Layer ' + str(layer) + ' - Ativação: \n\n')
+            np.savetxt(f, self.activations[layer], delimiter='    ', fmt='%1.4f')
+            f.write('\n-> Layer ' + str(layer) + ' - Pesos: \n\n')
+            np.savetxt(f, self.weights[layer], delimiter='    ', fmt='%1.4f')
+            f.write('\n-> Layer ' + str(layer) + ' - Erros: \n\n')
+            np.savetxt(f, self.errors[layer], delimiter='    ', fmt='%1.4f')
+            
+        f.close()
+        
+        
+n = Neural() 
+n.initiliaze_structure()
+n.feedforward()
+#n.save_to_txt("test2.txt")
     
     
     
