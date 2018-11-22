@@ -9,14 +9,15 @@ Created on Tue Nov 13 14:18:34 2018
 # =============================================================================
 #
 # TO-DO:
-#    -> Backpropagation (Slide 130 - Aula 14)
-#    -> Implementar Função de Custo (Slide 129 - Aula 14)   
+#   -> Estrutura pronta, mas tem algo errado. Tem que debugar   
 #
 # =============================================================================
 
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
+global j_list
 
 # =============================================================================
 # Falta implementar algumas coisas nessa classe. Além disso, o data frame ta sendo
@@ -26,15 +27,20 @@ import numpy as np
 class Neural(object):
     
     def __init__(self):
-        y_column = -1
-        data = pd.DataFrame([[5, 10, 1], [6, 12, 1], [7, 14, 0], [8, 16, 2]], columns = list('XZY'))
-        self.y = pd.DataFrame(data.iloc[:, -1])
-        self.data = data.drop(data.columns[y_column], axis=1)
+        y_column = 0
+#        data = pd.DataFrame([[5, 10, 1], [6, 12, 1], [7, 14, 0], [8, 16, 2]], columns = list('XZY'))
+        
+#        self.y = pd.DataFrame(data.iloc[:, -1])
+#        self.data = data.drop(data.columns[y_column], axis=1)
+        data = pd.read_csv("data/wine.csv")
+        self.y = np.array(pd.DataFrame(data.iloc[:, y_column]))
+        self.data = np.array(data.drop(data.columns[y_column], axis=1))
+        
         
         self.num_input_nodes = self.data.shape[1]
 #        self.num_output_nodes = (np.unique(self.y)).shape[0]
         #TODO
-        self.num_output_nodes = 2
+        self.num_output_nodes = 3
         
         num_hidden_layers = 1
         num_nodes_per_hidden_layer = [2]
@@ -48,6 +54,7 @@ class Neural(object):
         self.regularization = 1
         
         self.j = 0
+        self.j_regularized = 0
         
     # =============================================================================
     # Inicializa a estrutura da rede neural. Criando quatro listas contendo matrizes,
@@ -58,6 +65,7 @@ class Neural(object):
     # =============================================================================
     def initiliaze_structure(self):
         matrix_activation_list = []
+        matrix_activation_c_list = []
         matrix_weight_list = []
         matrix_gradient_list = []
         matrix_error_list = []
@@ -65,6 +73,7 @@ class Neural(object):
         # Input Layer
         new_matrix_activation = np.random.rand(self.num_nodes_per_layer[0] + 1, 1)
         new_matrix_activation[0, 0] = 1
+        matrix_activation_c_list.append(new_matrix_activation)        
         matrix_activation_list.append(new_matrix_activation)
         matrix_weight_list.append(np.random.rand(self.num_nodes_per_layer[1], self.num_nodes_per_layer[0] + 1))
         matrix_gradient_list.append(np.zeros((self.num_nodes_per_layer[1], self.num_nodes_per_layer[0] + 1)))
@@ -75,6 +84,7 @@ class Neural(object):
             new_matrix_activation = np.random.rand(self.num_nodes_per_layer[i] + 1, 1)
             new_matrix_activation[0, 0] = 1
             matrix_activation_list.append(new_matrix_activation)
+            matrix_activation_c_list.append(new_matrix_activation)
             
             new_matrix_error = np.empty((self.num_nodes_per_layer[i]+1, 1))
             matrix_error_list.append(new_matrix_error)
@@ -89,11 +99,13 @@ class Neural(object):
         new_matrix_activation = np.random.rand(self.num_nodes_per_layer[-1] + 1, 1)
         new_matrix_activation[0, 0] = 1
         matrix_activation_list.append(new_matrix_activation)
+        matrix_activation_c_list.append(new_matrix_activation)
         matrix_weight_list.append(np.array([[np.nan]]))
         matrix_gradient_list.append(np.array([[np.nan]]))
         matrix_error_list.append(np.random.rand(self.num_nodes_per_layer[-1] + 1, 1))
         
         self.activations = np.array(matrix_activation_list)
+        self.activations_c = np.array(matrix_activation_c_list)
         self.weights = np.array(matrix_weight_list)
         self.errors = np.array(matrix_error_list)
         self.gradients = np.array(matrix_gradient_list)
@@ -106,17 +118,17 @@ class Neural(object):
     # =============================================================================
     def feedforward(self, row_number):
         # Input Layer - Coloca o vetor de entrada "i" como sendo a matriz de ativação da camada 0
-        self.activations[0][1:] = np.transpose((np.array([self.data.iloc[row_number,:]])))
+        self.activations[0][1:] = np.transpose(np.array([self.data[row_number,:]]))
         
         for layer_i in (range(self.num_layers))[1:-1]:
             self.activations[layer_i][1:] = self.sigmoid(np.dot(self.weights[layer_i-1], self.activations[layer_i-1]))
             
         # Output - Ativa camada de saída
-        self.activations[-1][1:] = self.sigmoid(np.dot(self.weights[-2], self.activations[layer_i-2]))
+        self.activations[-1][1:] = self.sigmoid(np.dot(self.weights[-2], self.activations[-2]))
         
     def compute_errors(self, row_number):
         predict = self.activations[-1][1:]
-        output = np.array(pd.DataFrame(self.y.iloc[row_number, :]))
+        output = self.y[row_number, :][0]
         self.errors[-1][1:] = np.subtract(predict, output)
         
         # Cálculo dos deltas para hidden layers
@@ -150,19 +162,92 @@ class Neural(object):
             part1 = np.multiply(self.learning_rate, self.gradients[layer_i])  
             self.weights[layer_i] = np.subtract(self.weights[layer_i], part1)
     
+    def compute_j(self, row_number):
+        output = self.y[row_number, :][0]
+        
+        part1 = np.multiply((-output), np.log10(self.activations[-1][1:]))
+        part2 = np.multiply((-(1 - output)), np.log10(1 - self.activations[-1][1:]))
+        j = np.add(part1, part2)
+        self.j = self.j + np.sum(j)
+    
+    def sum_weights_squared(self):
+        result = 0
+        
+        for layer_i in range(self.num_layers)[:-1]:
+            part1 = np.multiply(self.weights[layer_i][:,1:], self.weights[layer_i][:,1:])
+            result = result + np.sum(part1)
+            
+        return result
+
+    # =============================================================================
+    # Feedforward da rede para uma instância de exemplo    
+    # =============================================================================
+    def feedforward_classify(self, row_instance):
+        # Input Layer - Coloca o vetor de entrada "i" como sendo a matriz de ativação da camada 0
+        self.activations_c[0][1:] = np.transpose(np.array([row_instance]))
+        
+        for layer_i in (range(self.num_layers))[1:-1]:
+            self.activations_c[layer_i][1:] = self.sigmoid(np.dot(self.weights[layer_i-1], self.activations_c[layer_i-1]))
+            
+        return self.sigmoid(np.dot(self.weights[-2], self.activations_c[-2]))[1:]
+
+    def classify(self, row_instance):
+        result = self.feedforward_classify(row_instance)
+        print(result)
+    
+    def compute_j_regularized(self, num_training_rows):
+        self.j = self.j / num_training_rows
+        s = self.sum_weights_squared()
+        self.j_regularized = (self.regularization / (2 * num_training_rows)) * s
+        
     def fit(self):
         num_training_rows = self.data.shape[0]
         
-        # Pra todos os exemplos
-        for row_number in range(num_training_rows):
-            print("Treinando exemplo " + str(row_number+1) + "/" + str(num_training_rows))
-            self.feedforward(row_number)
-            self.compute_errors(row_number)
-            self.accumulate_gradients()
+        global j_list
+        j_list = []
         
-        # Regularização e Atualização de gradientes        
-        self.compute_final_gradients(num_training_rows)
-        self.update_weights()
+        loops = 10
+        
+        for i in range(loops):
+            self.j = 0
+            print("Treinando Loop " + str(i+1) + "/" + str(loops))
+            # Pra todos os exemplos
+            for row_number in range(num_training_rows):
+#                print("Treinando exemplo " + str(row_number+1) + "/" + str(num_training_rows))
+                self.feedforward(row_number)
+                
+                self.compute_j(row_number)
+                
+                self.compute_errors(row_number)
+                self.accumulate_gradients()
+            
+            # J Regularizado
+            self.compute_j_regularized(num_training_rows)
+            
+            # Regularização e Atualização de gradientes        
+            self.compute_final_gradients(num_training_rows)
+            self.update_weights()
+#            print(self.j_regularized)
+#            print(self.j)
+            
+            j_list.append(self.j)
+    
+    
+        axis_x = range(loops)
+    
+        fig, ax = plt.subplots()
+        ax.plot(axis_x, j_list)
+        
+        ax.set(xlabel='Loop', ylabel='Error)', title='Error vs Loop')
+        ax.grid()
+        
+        plt.show()
+        
+        
+        data2 = pd.read_csv("data/wine.csv")
+        row = (np.array(data2.drop(data2.columns[0], axis=1)))[50, :]
+        self.classify(row)
+    
     
     # =============================================================================
     # Salva a estrutura e informações da rede em um arquivo txt    
