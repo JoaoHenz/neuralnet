@@ -65,11 +65,57 @@ activations[1]
     
     
     
+    # =============================================================================
+    # Feedforward da rede para uma instância de exemplo    
+    # =============================================================================
+#    def feedforward(self):
+#        # Input Layer - Coloca o vetor de entrada "i" como sendo a matriz de ativação da camada 0
+#        self.activations[0][1:] = np.transpose((np.array([self.data.iloc[0,:]])))
+##        self.activations[0] = np.append(self.activations[0], [1])
+#        
+#        for layer_i in (range(self.num_layers))[1:-1]:
+#            self.activations[layer_i] = self.sigmoid(np.dot(self.weights[layer_i-1], self.activations[layer_i-1]))
+#            self.activations[layer_i] = np.append(self.activations[layer_i], [1])
+#            
+#        # Output - Ativa camada de saída
+#        self.activations[-1] = self.sigmoid(np.dot(self.weights[-2], self.activations[layer_i-2]))
     
     
     
-    
-    
+#    # =============================================================================
+#    # Baseado no slide 132 da aula 14     
+#    # =============================================================================
+#    def backpropagation(self):
+#        # TODO: incompleto
+#        
+#        # Cálculo dos deltas
+#        # Camada de saída
+#        # TODO: ta certo?
+#        predict = self.activations[-1]
+#        output = np.array(pd.DataFrame(self.y.iloc[0, :]))
+#        self.errors[-1] = predict - output
+#        
+#        # Cálculo dos deltas para hidden layers
+#        for layer_i in reversed((range(self.num_layers))[1:-1]):
+#            weights_transposed = np.transpose(self.weights[layer_i])
+#            # Calcula em três partes o delta da camada
+#            part1 = np.dot(weights_transposed, self.errors[layer_i+1])
+#            part2 = np.multiply(self.activations[layer_i], (1-self.activations[layer_i]))
+#            self.errors[layer_i] = np.multiply(part1, part2)
+#        
+#        # Cálculo dos gradientes
+#        for layer_i in reversed((range(self.num_layers))[:-1]):
+#            activations_transposed = np.transpose(self.activations[layer_i])
+#
+#            part1 = np.dot(activations_transposed, self.errors[layer_i+1][1:])
+#            self.gradients[layer_i] = np.add(part1 + self.gradients[layer_i])
+#            
+#        # Cálculo dos gradientes finais
+#        for layer_i in reversed((range(self.num_layers))[:-1]):
+#            matrix_p = np.multiply(self.regularization, self.weights[layer_i])
+#            # zerar primeira coluna
+#            
+#            self.gradients[layer_i] = np.add(part1 + self.gradients[layer_i])
     
     
     

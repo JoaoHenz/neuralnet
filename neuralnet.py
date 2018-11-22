@@ -17,6 +17,7 @@ Created on Tue Nov 13 14:18:34 2018
 import pandas as pd
 import numpy as np
 
+
 # =============================================================================
 # Falta implementar algumas coisas nessa classe. Além disso, o data frame ta sendo
 # colocado diretamente ali dentro, pois estou primeiro tentando construir o algoritmo
@@ -26,17 +27,17 @@ class Neural(object):
     
     def __init__(self):
         y_column = -1
-        data = pd.DataFrame([[5, 10, 1], [6, 12, 1], [7, 14, 0], [8, 16, 0]], columns = list('XZY'))
+        data = pd.DataFrame([[5, 10, 1], [6, 12, 1], [7, 14, 0], [8, 16, 2]], columns = list('XZY'))
         self.y = pd.DataFrame(data.iloc[:, -1])
         self.data = data.drop(data.columns[y_column], axis=1)
         
         self.num_input_nodes = self.data.shape[1]
 #        self.num_output_nodes = (np.unique(self.y)).shape[0]
         #TODO
-        self.num_output_nodes = 1
+        self.num_output_nodes = 2
         
-        num_hidden_layers = 2
-        num_nodes_per_hidden_layer = [2, 2]
+        num_hidden_layers = 1
+        num_nodes_per_hidden_layer = [2]
         self.num_layers = num_hidden_layers + 2
         self.num_nodes_per_layer = [2]*(self.num_layers)
         self.num_nodes_per_layer[1:-1] = num_nodes_per_hidden_layer
@@ -62,30 +63,35 @@ class Neural(object):
         matrix_error_list = []
 
         # Input Layer
-        matrix_activation_list.append(np.random.rand(self.num_nodes_per_layer[0], 1))
-        matrix_weight_list.append(np.random.rand(self.num_nodes_per_layer[1], self.num_nodes_per_layer[0]))
-        matrix_gradient_list.append(np.random.rand(self.num_nodes_per_layer[1], self.num_nodes_per_layer[0]))
+        new_matrix_activation = np.random.rand(self.num_nodes_per_layer[0] + 1, 1)
+        new_matrix_activation[0, 0] = 1
+        matrix_activation_list.append(new_matrix_activation)
+        matrix_weight_list.append(np.random.rand(self.num_nodes_per_layer[1], self.num_nodes_per_layer[0] + 1))
+        matrix_gradient_list.append(np.zeros((self.num_nodes_per_layer[1], self.num_nodes_per_layer[0] + 1)))
         matrix_error_list.append(np.array([[np.nan]]))
         
         # Hidden Layers
         for i in (range(self.num_layers))[1:-1]:
-            new_matrix_activation = np.random.rand(self.num_nodes_per_layer[i], 1)
+            new_matrix_activation = np.random.rand(self.num_nodes_per_layer[i] + 1, 1)
+            new_matrix_activation[0, 0] = 1
             matrix_activation_list.append(new_matrix_activation)
             
-            new_matrix_error = np.empty((self.num_nodes_per_layer[i], 1))
+            new_matrix_error = np.empty((self.num_nodes_per_layer[i]+1, 1))
             matrix_error_list.append(new_matrix_error)
             
-            new_matrix_weight = np.random.rand(self.num_nodes_per_layer[i + 1], self.num_nodes_per_layer[i])
+            new_matrix_weight = np.random.rand(self.num_nodes_per_layer[i + 1], self.num_nodes_per_layer[i] + 1)
             matrix_weight_list.append(new_matrix_weight)
             
-            new_matrix_gradient = np.random.rand(self.num_nodes_per_layer[i + 1], self.num_nodes_per_layer[i])
+            new_matrix_gradient = np.zeros((self.num_nodes_per_layer[i + 1], self.num_nodes_per_layer[i] + 1))
             matrix_gradient_list.append(new_matrix_gradient)
         
         # Output Layer
-        matrix_activation_list.append(np.random.rand(self.num_nodes_per_layer[-1], 1))
+        new_matrix_activation = np.random.rand(self.num_nodes_per_layer[-1] + 1, 1)
+        new_matrix_activation[0, 0] = 1
+        matrix_activation_list.append(new_matrix_activation)
         matrix_weight_list.append(np.array([[np.nan]]))
         matrix_gradient_list.append(np.array([[np.nan]]))
-        matrix_error_list.append(np.zeros((self.num_nodes_per_layer[-1], 1)))
+        matrix_error_list.append(np.random.rand(self.num_nodes_per_layer[-1] + 1, 1))
         
         self.activations = np.array(matrix_activation_list)
         self.weights = np.array(matrix_weight_list)
@@ -94,49 +100,69 @@ class Neural(object):
 
     def sigmoid(self, x):
         return 1.0/(1+ np.exp(-x))
-    
+            
     # =============================================================================
     # Feedforward da rede para uma instância de exemplo    
     # =============================================================================
-    def feedforward(self):
+    def feedforward(self, row_number):
         # Input Layer - Coloca o vetor de entrada "i" como sendo a matriz de ativação da camada 0
-        self.activations[0][:] = np.transpose((np.array([self.data.iloc[0,:]])))
-        self.activations[0] = np.append(self.activations[0], [1])
+        self.activations[0][1:] = np.transpose((np.array([self.data.iloc[row_number,:]])))
         
         for layer_i in (range(self.num_layers))[1:-1]:
-            self.activations[layer_i] = self.sigmoid(np.dot(self.weights[layer_i-1], self.activations[layer_i-1]))
-            self.activations[layer_i] = np.append(self.activations[layer_i], [1])
+            self.activations[layer_i][1:] = self.sigmoid(np.dot(self.weights[layer_i-1], self.activations[layer_i-1]))
             
         # Output - Ativa camada de saída
-        self.activations[-1] = self.sigmoid(np.dot(self.weights[-2], self.activations[layer_i-2]))
+        self.activations[-1][1:] = self.sigmoid(np.dot(self.weights[-2], self.activations[layer_i-2]))
         
-        #TODO - ??
-#        return self.activations[-1]
+    def compute_errors(self, row_number):
+        predict = self.activations[-1][1:]
+        output = np.array(pd.DataFrame(self.y.iloc[row_number, :]))
+        self.errors[-1][1:] = np.subtract(predict, output)
         
-    def backpropagation(self):
-        # TODO: incompleto
-        
-        # Cálculo dos deltas
-        # Camada de saída
-        predict = self.activations[-1]
-        output = np.array(pd.DataFrame(self.y.iloc[0, :]))
-        self.errors[-1] = predict - output
-        
-        # Hidden Layers
-        for layer_i in reversed((range(self.num_layers))[:-1]):
-            weights_transposed = np.transpose(self.weights[layer_i])
+        # Cálculo dos deltas para hidden layers
+        for layer_i in reversed((range(self.num_layers))[1:-1]):        
+            weights_transposed = np.transpose(self.weights[layer_i])    
             # Calcula em três partes o delta da camada
-            part1 = np.dot(weights_transposed, self.errors[layer_i+1])
+            part1 = np.dot(weights_transposed, self.errors[layer_i+1][1:])
             part2 = np.multiply(self.activations[layer_i], (1-self.activations[layer_i]))
             self.errors[layer_i] = np.multiply(part1, part2)
+    
+    def accumulate_gradients(self):
+        # Cálculo dos gradientes
+        for layer_i in reversed((range(self.num_layers))[:-1]):
+            activations_transposed = np.transpose(self.activations[layer_i])
+            part1 = np.dot(self.errors[layer_i+1][1:], activations_transposed)
+            self.gradients[layer_i] = np.add(part1, self.gradients[layer_i])
+    
+    def compute_final_gradients(self, num_examples):
+        # Cálculo dos gradientes finais
+        for layer_i in reversed((range(self.num_layers))[:-1]):
+            matrix_p = np.multiply(self.regularization, self.weights[layer_i])
+            
+            # Zerar a primeira coluna pois bias não tem regularização
+            matrix_p[:, 0] = 0
+            
+            d = np.add(self.gradients[layer_i], matrix_p)
+            self.gradients[layer_i] = np.multiply((1/num_examples), d)
+    
+    def update_weights(self):
+        for layer_i in reversed((range(self.num_layers))[:-1]):
+            part1 = np.multiply(self.learning_rate, self.gradients[layer_i])  
+            self.weights[layer_i] = np.subtract(self.weights[layer_i], part1)
+    
+    def fit(self):
+        num_training_rows = self.data.shape[0]
         
-        # Vetor dos gradientes
-#        for layer_i in reversed((range(self.num_layers))[:-1]):
-#            activations_transposed = np.transpose(self.activations[layer_i])
-#            # Calcula em três partes o delta da camada
-#            part1 = np.dot(weights_transposed, self.errors[layer_i+1])
-#            part2 = np.multiply(self.activations[layer_i], (1-self.activations[layer_i]))
-#            self.errors[layer_i] = np.multiply(part1, part2)
+        # Pra todos os exemplos
+        for row_number in range(num_training_rows):
+            print("Treinando exemplo " + str(row_number+1) + "/" + str(num_training_rows))
+            self.feedforward(row_number)
+            self.compute_errors(row_number)
+            self.accumulate_gradients()
+        
+        # Regularização e Atualização de gradientes        
+        self.compute_final_gradients(num_training_rows)
+        self.update_weights()
     
     # =============================================================================
     # Salva a estrutura e informações da rede em um arquivo txt    
@@ -171,7 +197,7 @@ class Neural(object):
         
 n = Neural() 
 n.initiliaze_structure()
-n.feedforward()
+n.fit()
 #n.save_to_txt("test2.txt")
     
 
