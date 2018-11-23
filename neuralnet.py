@@ -9,14 +9,14 @@ Created on Tue Nov 13 14:18:34 2018
 # =============================================================================
 #
 # TO-DO:
-#   -> Estrutura pronta, mas tem algo errado. Tem que debugar   
+#   -> Não sei como faz pra multiplas classes   
 #
 # =============================================================================
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-
+import generallib as gl
 global j_list
 
 # =============================================================================
@@ -26,24 +26,17 @@ global j_list
 # =============================================================================
 class Neural(object):
     
-    def __init__(self):
-        y_column = 0
-#        data = pd.DataFrame([[5, 10, 1], [6, 12, 1], [7, 14, 0], [8, 16, 2]], columns = list('XZY'))
-        
-#        self.y = pd.DataFrame(data.iloc[:, -1])
-#        self.data = data.drop(data.columns[y_column], axis=1)
-        data = pd.read_csv("data/wine.csv")
-        self.y = np.array(pd.DataFrame(data.iloc[:, y_column]))
-        self.data = np.array(data.drop(data.columns[y_column], axis=1))
-        
+    def __init__(self, dataset, y):      
+        self.y = y
+        self.data = dataset        
         
         self.num_input_nodes = self.data.shape[1]
 #        self.num_output_nodes = (np.unique(self.y)).shape[0]
         #TODO
-        self.num_output_nodes = 3
+        self.num_output_nodes = 1
         
-        num_hidden_layers = 1
-        num_nodes_per_hidden_layer = [2]
+        num_hidden_layers = 2
+        num_nodes_per_hidden_layer = [8, 8]
         self.num_layers = num_hidden_layers + 2
         self.num_nodes_per_layer = [2]*(self.num_layers)
         self.num_nodes_per_layer[1:-1] = num_nodes_per_hidden_layer
@@ -55,6 +48,8 @@ class Neural(object):
         
         self.j = 0
         self.j_regularized = 0
+        
+        self.initiliaze_structure()
         
     # =============================================================================
     # Inicializa a estrutura da rede neural. Criando quatro listas contendo matrizes,
@@ -112,7 +107,12 @@ class Neural(object):
 
     def sigmoid(self, x):
         return 1.0/(1+ np.exp(-x))
-            
+    
+    def softmax(self, x):
+        """Compute softmax values for each sets of scores in x."""
+        e_x = np.exp(x - np.max(x))
+        return e_x / e_x.sum(axis=0) # only difference
+        
     # =============================================================================
     # Feedforward da rede para uma instância de exemplo    
     # =============================================================================
@@ -125,7 +125,7 @@ class Neural(object):
             
         # Output - Ativa camada de saída
         self.activations[-1][1:] = self.sigmoid(np.dot(self.weights[-2], self.activations[-2]))
-        
+    
     def compute_errors(self, row_number):
         predict = self.activations[-1][1:]
         output = self.y[row_number, :][0]
@@ -189,11 +189,16 @@ class Neural(object):
         for layer_i in (range(self.num_layers))[1:-1]:
             self.activations_c[layer_i][1:] = self.sigmoid(np.dot(self.weights[layer_i-1], self.activations_c[layer_i-1]))
             
-        return self.sigmoid(np.dot(self.weights[-2], self.activations_c[-2]))[1:]
+        return self.sigmoid(np.dot(self.weights[-2], self.activations_c[-2]))[0][0]
 
-    def classify(self, row_instance):
-        result = self.feedforward_classify(row_instance)
-        print(result)
+    def classify(self, instances):
+        num_rows = instances.shape[0]
+        results = np.zeros((num_rows, 1))
+        
+        for row_i in range(num_rows):
+            results[row_i,0] = self.feedforward_classify(instances[row_i,:])
+        
+        return results
     
     def compute_j_regularized(self, num_training_rows):
         self.j = self.j / num_training_rows
@@ -206,7 +211,7 @@ class Neural(object):
         global j_list
         j_list = []
         
-        loops = 10
+        loops = 100
         
         for i in range(loops):
             self.j = 0
@@ -241,13 +246,7 @@ class Neural(object):
         ax.set(xlabel='Loop', ylabel='Error)', title='Error vs Loop')
         ax.grid()
         
-        plt.show()
-        
-        
-        data2 = pd.read_csv("data/wine.csv")
-        row = (np.array(data2.drop(data2.columns[0], axis=1)))[50, :]
-        self.classify(row)
-    
+        plt.show()    
     
     # =============================================================================
     # Salva a estrutura e informações da rede em um arquivo txt    
@@ -280,67 +279,39 @@ class Neural(object):
         f.close()
         
         
-n = Neural() 
-n.initiliaze_structure()
+y_column = -1
+data = pd.read_csv("data/Churn_Modelling_Edited.csv")
+
+y = np.array(pd.DataFrame(data.iloc[:, y_column]))
+dataset = np.array(data.drop(data.columns[y_column], axis=1))
+
+dataset = gl.normalization(dataset)
+
+n = Neural(dataset, y)
 n.fit()
+
+result = n.classify(dataset)
+result = (result > 0.5)
+expected = (y > 0.5)
+
+from sklearn.metrics import confusion_matrix
+cm = confusion_matrix(expected, result)
+
 #n.save_to_txt("test2.txt")
-    
+
+
+
+
+
+
+
+
+
 
 
 
     
-# =============================================================================
-# K-fold Estratificado
-# Retorna uma lista, cada item sendo um dataframe (fold)
-# =============================================================================
-def stratified_k_fold(k_folds, y_column, dataframe):
-    """
-    1) Calcula quantas instâncias de cada classe devem ser inseridos
-    em cada fold;
-    
-    2) Cria um fold por vez, inserindo N instâncias de cada classe no fold;
-    
-    3) No último fold, insere as instâncias que sobraram. 
-    
-    *Qualquer instância do dataframe original deve estar somente em um único fold. 
-    """
-    
-    y = dataframe.iloc[:,y_column]
-    classes = np.unique(y.iloc[:])
-    num_per_fold = {}
-    k_fold_dataframes = []
-    classes_index = {}
-    counter = {}
 
-    for c in classes:
-        total_rows_class = np.sum(y.iloc[:] == c)
-        num = int(round(total_rows_class/k_folds))
-        num_per_fold[c] = num
-        index = y[y.iloc[:] == c].index
-        classes_index[c] = index
-        counter[c] = 0    
-    
-    for k in range(k_folds-1):
-        index = np.array([], dtype = "int64")
-        for c in classes:
-            num = num_per_fold[c]
-            limit = counter[c] + num
-            index = np.concatenate((index, classes_index[c][counter[c]:limit].values))
-            counter[c] += num
-        k_fold_dataframes.append(dataframe.iloc[index])
-    
-    index = np.array([], dtype = "int64")
-    for c in classes:
-        limit = classes_index[c].shape[0]
-        index = np.concatenate((index, classes_index[c][counter[c]:limit].values))
-        counter[c] += num
-    k_fold_dataframes.append(dataframe.iloc[index])
-
-    return k_fold_dataframes
-
-#data = pd.read_csv("wine.csv", header = None)
-#
-#x = stratified_k_fold(10, 0, data)
     
     
     
