@@ -14,12 +14,12 @@ class NeuralNet(object):
     # colocado diretamente ali dentro, pois estou primeiro tentando construir o algoritmo
     # de treino da rede.
     # =============================================================================
-    def __init__(self, dataset, y, num_hidden_layers=2, num_nodes_per_hidden_layer = [8,8]):
-        self.y = y
+    def __init__(self, dataset, coluna_aserpredita, num_hidden_layers=2, num_nodes_per_hidden_layer = [8,8],fator_reg=0.25):
+        self.coluna_aserpredita = coluna_aserpredita
         self.data = dataset
         self.num_input_nodes = self.data.shape[1]
         #TODO
-        #        self.num_output_nodes = (np.unique(self.y)).shape[0]
+        #        self.num_output_nodes = (np.unique(self.coluna_aserpredita)).shape[0]
         self.num_output_nodes = 1
         self.num_hidden_layers = num_hidden_layers
         self.num_nodes_per_hidden_layer = num_nodes_per_hidden_layer
@@ -30,7 +30,7 @@ class NeuralNet(object):
         self.num_nodes_per_layer[-1] = self.num_output_nodes
 
         self.learning_rate = 0.1
-        self.regularization = 1
+        self.fator_reg = fator_reg
         self.j = 0
         self.j_regularized = 0
         self.initiliaze_structure()
@@ -112,7 +112,7 @@ class NeuralNet(object):
 
     def compute_errors(self, row_number):
         predict = self.activations[-1][1:]
-        output = self.y[row_number, :][0]
+        output = self.coluna_aserpredita[row_number, :][0]
         self.errors[-1][1:] = np.subtract(predict, output)
 
         # Cálculo dos deltas para hidden layers
@@ -133,7 +133,7 @@ class NeuralNet(object):
     def compute_final_gradients(self, num_examples):
         # Cálculo dos gradientes finais
         for layer_i in reversed((range(self.num_layers))[:-1]):
-            matrix_p = np.multiply(self.regularization, self.weights[layer_i])
+            matrix_p = np.multiply(self.fator_reg, self.weights[layer_i])
 
             # Zerar a primeira coluna pois bias não tem regularização
             matrix_p[:, 0] = 0
@@ -147,7 +147,7 @@ class NeuralNet(object):
             self.weights[layer_i] = np.subtract(self.weights[layer_i], part1)
 
     def compute_j(self, row_number):
-        output = self.y[row_number, :][0]
+        output = self.coluna_aserpredita[row_number, :][0]
 
         part1 = np.multiply((-output), np.log10(self.activations[-1][1:]))
         part2 = np.multiply((-(1 - output)), np.log10(1 - self.activations[-1][1:]))
@@ -187,7 +187,7 @@ class NeuralNet(object):
     def compute_j_regularized(self, num_training_rows):
         self.j = self.j / num_training_rows
         s = self.sum_weights_squared()
-        self.j_regularized = (self.regularization / (2 * num_training_rows)) * s
+        self.j_regularized = (self.fator_reg / (2 * num_training_rows)) * s
 
     def fit(self,show=False,filenamefig='lastfitresult'):
         # função de treinamento do modelo?
@@ -232,14 +232,17 @@ class NeuralNet(object):
         ax.grid()
 
         if show:
+            plt.savefig(filenamefig+'.png')
             plt.show()
-        plt.savefig(filenamefig+'.png')
+        else:
+            plt.savefig(filenamefig+'.png')
 
     def savetofile(self, filename='lastneuralnet'):
         # =============================================================================
         # Salva a estrutura e informações da rede em um arquivo txt
         # =============================================================================
         f = open(filename, "a")
+
         f.write("### Informações da Rede Neural ###\n\n")
         f.write('Quantidade de Inputs: ' + str(self.num_nodes_per_layer[0]) + "\n")
         f.write('Quantidade de Hidden Layers: ' + str(self.num_hidden_layers) + "\n")
@@ -263,4 +266,23 @@ class NeuralNet(object):
             f.write('\n-> Layer ' + str(layer) + ' - Erros: \n\n')
             np.savetxt(f, self.errors[layer], delimiter='    ', fmt='%1.4f')
 
+
+
+
+        f.close()
+
+    def saveobligatoryfiles(self, testname = ''):
+
+        #salva estrutura da Rede
+        f = open(testname+'network.txt', "a")
+        f.write(self.fator_reg)
+        f.write(self.num_input_nodes)
+        for i in range(0,self.num_hidden_layers):
+            f.write(self.fator_reg)
+        f.write(self.num_output_nodes)
+        f.close()
+
+        #salva os pesos finais da Rede
+        f = open(testname+'final_weights.txt', "a")
+        #TODO
         f.close()
