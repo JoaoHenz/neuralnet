@@ -9,9 +9,11 @@ import generallib as gl
 y_column = -1 #?
 
 data = pd.read_csv("data/Churn_Modelling_Edited.csv") #abre arquivo
-y = np.array(pd.DataFrame(data.iloc[:, y_column])) #cria dataset com os dados do arquivo
-dataset = np.array(data.drop(data.columns[y_column], axis=1))
+y = np.array(pd.DataFrame(data.iloc[:, y_column])) #y é a coluna que eu quero prever
+dataset = np.array(data.drop(data.columns[y_column], axis=1)) #cria dataset com os dados do arquivo
 dataset = gl.normalization(dataset)
+
+print('isto é o y:',y,'\n')
 
 n = NeuralNet(dataset, y) #cria a rede neural.... já treina ela?
 n.fit() #?

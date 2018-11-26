@@ -10,19 +10,19 @@ global j_list
 
 class NeuralNet(object):
     # =============================================================================
-    # Falta implementar algumas coisas nessa classe. Além disso, o data frame ta sendo
+    # Falta implementar algumas coisas nessa classe. Além disso, o dataframe ta sendo
     # colocado diretamente ali dentro, pois estou primeiro tentando construir o algoritmo
     # de treino da rede.
     # =============================================================================
-    def __init__(self, dataset, y):
+    def __init__(self, dataset, y, num_hidden_layers=2, num_nodes_per_hidden_layer = [8,8]):
         self.y = y
         self.data = dataset
         self.num_input_nodes = self.data.shape[1]
         #TODO
         #        self.num_output_nodes = (np.unique(self.y)).shape[0]
         self.num_output_nodes = 1
-        self.num_hidden_layers = 2
-        self.num_nodes_per_hidden_layer = [8, 8]
+        self.num_hidden_layers = num_hidden_layers
+        self.num_nodes_per_hidden_layer = num_nodes_per_hidden_layer
         self.num_layers = self.num_hidden_layers + 2
         self.num_nodes_per_layer = [2]*(self.num_layers)
         self.num_nodes_per_layer[1:-1] = self.num_nodes_per_hidden_layer
@@ -190,6 +190,7 @@ class NeuralNet(object):
         self.j_regularized = (self.regularization / (2 * num_training_rows)) * s
 
     def fit(self,show=False,filenamefig='lastfitresult'):
+        # função de treinamento do modelo?
         num_training_rows = self.data.shape[0]
 
         global j_list
