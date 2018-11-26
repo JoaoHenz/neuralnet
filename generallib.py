@@ -1,29 +1,22 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Nov 22 15:30:57 2018
-
-@author: jcdazeredo
-"""
-
 import numpy as np
 
-# =============================================================================
-# K-fold Estratificado
-# Retorna uma lista, cada item sendo um dataframe (fold)
-# =============================================================================
+
 def stratified_k_fold(k_folds, y_column, dataframe):
+    # =============================================================================
+    # K-fold Estratificado
+    # Retorna uma lista, cada item sendo um dataframe (fold)
+    # =============================================================================
     """
     1) Calcula quantas instâncias de cada classe devem ser inseridos
     em cada fold;
-    
+
     2) Cria um fold por vez, inserindo N instâncias de cada classe no fold;
-    
-    3) No último fold, insere as instâncias que sobraram. 
-    
-    *Qualquer instância do dataframe original deve estar somente em um único fold. 
+
+    3) No último fold, insere as instâncias que sobraram.
+
+    *Qualquer instância do dataframe original deve estar somente em um único fold.
     """
-    
+
     y = dataframe.iloc[:,y_column]
     classes = np.unique(y.iloc[:])
     num_per_fold = {}
@@ -37,8 +30,8 @@ def stratified_k_fold(k_folds, y_column, dataframe):
         num_per_fold[c] = num
         index = y[y.iloc[:] == c].index
         classes_index[c] = index
-        counter[c] = 0    
-    
+        counter[c] = 0
+
     for k in range(k_folds-1):
         index = np.array([], dtype = "int64")
         for c in classes:
@@ -47,7 +40,7 @@ def stratified_k_fold(k_folds, y_column, dataframe):
             index = np.concatenate((index, classes_index[c][counter[c]:limit].values))
             counter[c] += num
         k_fold_dataframes.append(dataframe.iloc[index])
-    
+
     index = np.array([], dtype = "int64")
     for c in classes:
         limit = classes_index[c].shape[0]
@@ -57,35 +50,30 @@ def stratified_k_fold(k_folds, y_column, dataframe):
 
     return k_fold_dataframes
 
-#data = pd.read_csv("wine.csv", header = None)
-#
-#x = stratified_k_fold(10, 0, data)
-    
+    #data = pd.read_csv("wine.csv", header = None)
+    #
+    #x = stratified_k_fold(10, 0, data)
 
-
-
-
-
-# =============================================================================
-# Função que cálcula a normalização de um valor para o intervalo [-1, 1]
-# =============================================================================
 def normalization_x(x, v_max, v_min):
+    # =============================================================================
+    # Função que cálcula a normalização de um valor para o intervalo [-1, 1]
+    # =============================================================================
     return (2*(((x-v_min)/(v_max - v_min)))) -1
 
-# =============================================================================
-# Normaliza um dataset para o intervalo [-1, 1]. Deve ser passado como parâmetro
-# um dataset em numpy array
-# =============================================================================
 def normalization(data):
+    # =============================================================================
+    # Normaliza um dataset para o intervalo [-1, 1]. Deve ser passado como parâmetro
+    # um dataset em numpy array
+    # =============================================================================
     num_columns = data.shape[1]
     new_data = np.empty_like(data)
-    
+
     for column_i in range(num_columns):
         v_max = np.max(data[:, column_i])
         v_min = np.min(data[:, column_i])
         new_data[:, column_i] = normalization_x(data[:, column_i], v_max, v_min)
-        
+
     return new_data
 
-#data = pd.read_csv("data/wine.csv")
-#data = np.array(data)
+    #data = pd.read_csv("data/wine.csv")
+    #data = np.array(data)
