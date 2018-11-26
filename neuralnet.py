@@ -2,9 +2,7 @@
 # TODO -> Não sei como faz pra multiplas classes
 
 import matplotlib.pyplot as plt
-import pandas as pd
 import numpy as np
-import generallib as gl
 global j_list
 
 
@@ -40,7 +38,7 @@ class NeuralNet(object):
         # Inicializa a estrutura da rede neural. Criando quatro listas contendo matrizes,
         # uma para matrizes de ativação, outra para os pesos, outra para os gradientes
         # e outra para os erros. Cada elemento dessas quatro listas é uma matriz, e seus
-        # índices são associados à cada camada da rede neural, sendo a camada input = 0 e
+        # índices são associados �  cada camada da rede neural, sendo a camada input = 0 e
         # a camada output = -1 / último índice da lista.
         # =============================================================================
         matrix_activation_list = []
@@ -196,7 +194,7 @@ class NeuralNet(object):
         global j_list
         j_list = []
 
-        loops = 100
+        loops = 10
 
         for i in range(loops):
             self.j = 0

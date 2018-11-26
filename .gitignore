@@ -2,3 +2,7 @@
 \.fuse_hidden0000081c00000001
 
 *.pyc
+
+lastneuralnet
+
+lastfitresult\.png

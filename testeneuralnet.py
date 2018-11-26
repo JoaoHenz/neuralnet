@@ -7,13 +7,15 @@ import generallib as gl
 
 
 #le dataset
-num_colunaaserpredita = -1
+y_column = -1
 data = pd.read_csv("data/Churn_Modelling_Edited.csv") #abre arquivo
-coluna_aserpredita = np.array(pd.DataFrame(data.iloc[:, num_colunaaserpredita]))
-dataset = np.array(data.drop(data.columns[num_colunaaserpredita], axis=1))
+
+y = np.array(pd.DataFrame(data.iloc[:, y_column]))
+
+dataset = np.array(data.drop(data.columns[y_column], axis=1))
 dataset = gl.normalization(dataset)
 
-n = NeuralNet(dataset, coluna_aserpredita) #cria a rede neural.... já treina ela?
+n = NeuralNet(dataset, y) #cria a rede neural.... já treina ela?
 n.fit() #?
 n.savetofile()
 

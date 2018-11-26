@@ -80,7 +80,9 @@ def normalization(data):
 
 
 def read_networkstructfile(filename):
+    pass
     ## TODO:
 
 def read_initialweightsfile(filename):
+    pass
     ## TODO:
