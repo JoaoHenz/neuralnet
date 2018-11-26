@@ -271,18 +271,9 @@ class NeuralNet(object):
 
         f.close()
 
-    def saveobligatoryfiles(self, testname = ''):
-
-        #salva estrutura da Rede
-        f = open(testname+'network.txt', "a")
-        f.write(self.fator_reg)
-        f.write(self.num_input_nodes)
-        for i in range(0,self.num_hidden_layers):
-            f.write(self.fator_reg)
-        f.write(self.num_output_nodes)
-        f.close()
-
+    def save_finalweights(self, testname = 'ultimoteste'):
+        # pedido na definição do trab
         #salva os pesos finais da Rede
-        f = open(testname+'final_weights.txt', "a")
+        f = open(testname+'_finalweights.txt', "a")
         #TODO
         f.close()

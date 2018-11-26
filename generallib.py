@@ -77,3 +77,10 @@ def normalization(data):
 
     #data = pd.read_csv("data/wine.csv")
     #data = np.array(data)
+
+
+def read_networkstructfile(filename):
+    ## TODO:
+
+def read_initialweightsfile(filename):
+    ## TODO:

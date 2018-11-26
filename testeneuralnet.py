@@ -6,11 +6,11 @@ import generallib as gl
 
 
 
-y_column = -1 #?
-
-data = pd.read_csv("data/Wine.csv") #abre arquivo
-coluna_aserpredita = np.array(pd.DataFrame(data.iloc[:, y_column])) #y é a coluna que eu quero prever
-dataset = np.array(data.drop(data.columns[y_column], axis=1)) #cria dataset com os dados do arquivo
+#le dataset
+num_colunaaserpredita = -1
+data = pd.read_csv("data/Churn_Modelling_Edited.csv") #abre arquivo
+coluna_aserpredita = np.array(pd.DataFrame(data.iloc[:, num_colunaaserpredita]))
+dataset = np.array(data.drop(data.columns[num_colunaaserpredita], axis=1))
 dataset = gl.normalization(dataset)
 
 n = NeuralNet(dataset, coluna_aserpredita) #cria a rede neural.... já treina ela?
