@@ -120,3 +120,26 @@ def read_initialweightsfile(filename):
     f.close()
 
     return initial_weights
+
+def read_dataset(filename):
+    # not sure if useful
+    dataset = []
+    f = open(filename,'r'):
+
+    for line in f:
+        dic_intancia = {}
+        line.replace(' ','')
+        splits = line.split(';')
+        for i in range(0,len(splits)):
+            supersplits = splits.split(',')
+            lista_valores = []
+            for j in range(0,len(supersplits)):
+                lista_valores.append(supersplits[j])
+            if i ==0:
+                dic_intancia['atributos'] = lista_valores
+            else:
+                dic_intancia['saidas'] = lista_valores
+        dataset.append(dic_intancia)
+
+    f.close()
+    return dataset
