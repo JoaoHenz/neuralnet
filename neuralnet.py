@@ -54,7 +54,7 @@ class NeuralNet(object):
         # Input Layer
         new_matrix_activation = np.random.rand(self.num_nodes_per_layer[0] + 1, 1)
         new_matrix_activation[0, 0] = 1
-      
+
         matrix_activation_list.append(new_matrix_activation)
         matrix_weight_list.append(np.random.uniform(-1,+1, size = (self.num_nodes_per_layer[1], self.num_nodes_per_layer[0] + 1)))
         matrix_gradient_list.append(np.zeros((self.num_nodes_per_layer[1], self.num_nodes_per_layer[0] + 1)))
@@ -65,10 +65,10 @@ class NeuralNet(object):
             new_matrix_activation = np.random.rand(self.num_nodes_per_layer[i] + 1, 1)
             new_matrix_activation[0, 0] = 1
             matrix_activation_list.append(new_matrix_activation)
-            
+
             new_matrix_error = np.empty((self.num_nodes_per_layer[i]+1, 1))
             matrix_error_list.append(new_matrix_error)
-            
+
             new_matrix_weight = np.random.uniform(-1,+1, size = (self.num_nodes_per_layer[i + 1], self.num_nodes_per_layer[i] + 1))
             matrix_weight_list.append(new_matrix_weight)
 
@@ -79,7 +79,7 @@ class NeuralNet(object):
         new_matrix_activation = np.random.rand(self.num_nodes_per_layer[-1] + 1, 1)
         new_matrix_activation[0, 0] = 1
         matrix_activation_list.append(new_matrix_activation)
-                
+
         matrix_weight_list.append(np.array([[np.nan]]))
         matrix_gradient_list.append(np.array([[np.nan]]))
         matrix_error_list.append(np.random.rand(self.num_nodes_per_layer[-1] + 1, 1))
@@ -88,7 +88,7 @@ class NeuralNet(object):
         self.weights = np.array(matrix_weight_list)
         self.errors = np.array(matrix_error_list)
         self.gradients = np.array(matrix_gradient_list)
-        
+
     def sigmoid(self, x):
         return 1.0/(1+ np.exp(-x))
 
@@ -113,7 +113,7 @@ class NeuralNet(object):
     def compute_errors(self, row_number):
         predict = self.activations[-1][1:]
         predict = np.where(predict > 0.5, 1, 0)
-        
+
         output = self.coluna_aserpredita[row_number, :][0]
         self.errors[-1][1:] = np.subtract(predict, output)
 
@@ -152,7 +152,7 @@ class NeuralNet(object):
         output = np.array([self.coluna_aserpredita[row_number, :]])
         predict = self.activations[-1][1:]
 #        predict = np.where(predict > 0.5, 1, 0)
-        
+
         part1 = np.multiply((-output), np.log10(predict))
         part2 = np.multiply((1 - output), np.log10(1 - predict))
         j = np.subtract(part1, part2)
@@ -199,30 +199,30 @@ class NeuralNet(object):
     def zerar_matrix(self):
         for layer_i in (range(self.num_layers))[0:-1]:
             self.gradients[layer_i].fill(0)
-        
+
     def fit(self,show=False,filenamefig='lastfitresuslt'):
         # funco de treinamento do modelo
         num_training_rows = self.data.shape[0]
         num_mini_batch = 50
         num_loops = math.floor(num_training_rows / num_mini_batch)
         num_rows_rest = num_training_rows - (num_loops*num_mini_batch)
-        
+
         global j_list
         j_list = []
 
-        repetitions = 50                         
-        
+        repetitions = 50
+
         for i in range(repetitions):
             self.j = 0
             mini_i = 0
             print("Treinando Loop " + str(i+1) + "/" + str(repetitions))
-            
+
             for row_number in range(num_training_rows):
                 self.feedforward(row_number)
                 self.compute_errors(row_number)
                 self.accumulate_gradients()
                 self.compute_j(row_number)
-                
+
                 if (row_number % num_mini_batch == 0) and row_number != 0:
                     mini_i += 1
 #                    print("Mini-batch " + str(mini_i+1) + "/" + str(num_mini_batch+1))
@@ -230,18 +230,18 @@ class NeuralNet(object):
                     self.compute_final_gradients(num_mini_batch)
                     self.update_weights()
                     self.zerar_matrix()
-                
-            if num_rows_rest > 0:                             
+
+            if num_rows_rest > 0:
                 # Regularizaco e Atualizacao de gradientes
                 self.compute_final_gradients(num_rows_rest)
                 self.update_weights()
                 self.zerar_matrix()
-                        
+
             # J Regularizado
             self.compute_j_regularized(num_mini_batch)
             j_list.append(self.j)
-            
-              
+
+
 
 #        for i in range(loops):
 #            self.j = 0
@@ -264,9 +264,9 @@ class NeuralNet(object):
 #            self.update_weights()
 #
 #            j_list.append(self.j)
-#            self.zerar_matrix()  
+#            self.zerar_matrix()
 
-            
+
 
 
 

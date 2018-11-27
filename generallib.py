@@ -145,7 +145,7 @@ def read_dataset(filename):
     f.close()
     return dataset
 
-def grad_estacorreto(funcao,gradiente,x,epsilon=0.01, max_delta=0.1 ):
+def grad_estacorreto(funcao,gradiente,x,epsilon=0.01, max_delta=0.1):
 
     aproximacao_numerica = (funcao(x+epsilon) - funcao(x-epsilon))/2*epsilon
     delta = gradiente - aproximacao_numerica
