@@ -152,7 +152,7 @@ def read_initialweightsfile(filename):
             for i in range(0,len(weights)): #para cada peso da layer
                 node_weights.append(float(weights[i]))
             layer_weights.append(node_weights)
-        initial_weights.append(layer_weights)
+        initial_weights.append(np.array(layer_weights))
 
     f.close()
 
@@ -195,14 +195,14 @@ def transform_y(dataset, y_column):
     df = dataset.copy()
     classes_transform = {}
     classes = np.unique(df.iloc[:,y_column])
-    
+
     for i in range(len(classes)):
         cl = classes[i]
         classes_transform[i] = cl
         df.iloc[:,y_column] = df.iloc[:,y_column].replace(cl, i)
-    
+
     return df, classes_transform
-    
+
 def k_fold_training(k, dataset, y_column, epochs, batch_size, hidden_lengths = [24, 24], fator_reg = 0.25):
     folds_original = stratified_k_fold(k, y_column, dataset)
     cm_list = []
@@ -210,34 +210,34 @@ def k_fold_training(k, dataset, y_column, epochs, batch_size, hidden_lengths = [
 
     print("###### K-FOLD RUNNING ######")
     print()
-    
+
     for i in range(k):
         folds = folds_original.copy()
         teste = np.array(folds.pop(i))
-        treino = folds        
+        treino = folds
         treino = np.array(pd.concat(folds))
-            
+
         X_train = np.delete(treino, y_column, 1)
         X_train = normalization(X_train)
         y_train = np.transpose(np.array([treino[:, y_column]]))
-        
+
         X_test = np.delete(teste, y_column, 1)
         X_test = normalization(X_test)
         y_test = np.transpose(np.array([teste[:, y_column]]))
-        
+
         num_input = dataset.shape[1]-1
         num_output = len(np.unique(dataset.iloc[:,y_column]))
-        
+
         net = nn.NeuralNet(X_train, y_train, num_entrada = num_input, num_saida = num_output, hidden_lengths = hidden_lengths, fator_reg = fator_reg)
         print()
         print("###### TRAINING - " + str(i+1) + "/" + str(k) + " folds ######")
         net.fit(epochs = epochs, batch_size = batch_size)
-        
+
         print()
         print("###### TESTING ######")
         print()
         y_pred = net.classify(X_test)
-        
+
         # Resultado do classificador
         classifier_result = y_pred == y_test
         accuracy = np.sum(classifier_result) / y_test.shape[0]
@@ -245,5 +245,5 @@ def k_fold_training(k, dataset, y_column, epochs, batch_size, hidden_lengths = [
         accuracy_list.append(accuracy)
         cm = confusion_matrix(y_test, y_pred)
         cm_list.append(cm)
-        
+
     return accuracy_list, cm_list
