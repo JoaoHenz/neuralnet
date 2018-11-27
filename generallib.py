@@ -102,7 +102,7 @@ def read_networkstructfile(filename):
 
 def read_initialweightsfile(filename):
     initial_weights = []
-
+    
     f = open(filename,'r')
 
     for line in f: #cada layer
