@@ -1,6 +1,7 @@
 import numpy as np
 
 
+
 def stratified_k_fold(k_folds, y_column, dataframe):
     # =============================================================================
     # K-fold Estratificado
@@ -80,9 +81,44 @@ def normalization(data):
 
 
 def read_networkstructfile(filename):
-    pass
-    ## TODO:
+    network_struct = {}
+    list_stuff = []
+
+    f = open(filename,'a')
+
+    for line in f:
+        list_stuff.append((float)line)
+
+    network_struct['fator_reg'] = list_stuff[0]
+    network_struct['num_entrada'] = list_stuff[1]
+    network_struct['num_saida'] = list_stuff[len(lista_stuff)]
+
+    hidden_lengths = []
+    for i in range(2,len(lista_stuff)-1):
+        hidden_lengths.append(list_stuff[i])
+    network_struct['hidden_lengths'] = hidden_lengths
+    f.close()
+
+    return network_struct
+
 
 def read_initialweightsfile(filename):
-    pass
-    ## TODO:
+    initial_weights = []
+
+    f = open(filename,'a')
+
+    for line in f: #cada layer
+        line.replace(' ','')
+        layer_weights = []
+        nodes = line.split[';']
+        for i in range(0,len(nodes)): #para cada neuronio da layer
+            weigths = nodes.split[',']
+            node_weights = []
+            for i in range(0,len(weights)): #para cada peso da layer
+                node_weights.append((float)weights[i])
+            layer_weights.append(node_weights)
+        initial_weights.append(layer_weights)
+
+    f.close()
+
+    return initial_weights

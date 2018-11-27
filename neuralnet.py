@@ -12,15 +12,16 @@ class NeuralNet(object):
     # colocado diretamente ali dentro, pois estou primeiro tentando construir o algoritmo
     # de treino da rede.
     # =============================================================================
-    def __init__(self, dataset, coluna_aserpredita, num_hidden_layers=2, num_nodes_per_hidden_layer = [8,8],fator_reg=0.25):
-        self.coluna_aserpredita = coluna_aserpredita
+    def __init__(self, dataset, y, hidden_lengths = [8,8],fator_reg=0.25,num_saida = 1,num_entrada,initial_weights = []):
+        self.coluna_aserpredita = y
         self.data = dataset
-        self.num_input_nodes = self.data.shape[1]
+        #self.num_input_nodes = self.data.shape[1]
+        self.num_input_nodes = num_entrada
         #TODO
         #        self.num_output_nodes = (np.unique(self.coluna_aserpredita)).shape[0]
-        self.num_output_nodes = 1
-        self.num_hidden_layers = num_hidden_layers
-        self.num_nodes_per_hidden_layer = num_nodes_per_hidden_layer
+        self.num_output_nodes = num_saida
+        self.num_hidden_layers = len(hidden_lengths)
+        self.num_nodes_per_hidden_layer = hidden_lengths
         self.num_layers = self.num_hidden_layers + 2
         self.num_nodes_per_layer = [2]*(self.num_layers)
         self.num_nodes_per_layer[1:-1] = self.num_nodes_per_hidden_layer
@@ -38,7 +39,7 @@ class NeuralNet(object):
         # Inicializa a estrutura da rede neural. Criando quatro listas contendo matrizes,
         # uma para matrizes de ativação, outra para os pesos, outra para os gradientes
         # e outra para os erros. Cada elemento dessas quatro listas é uma matriz, e seus
-        # índices são associados �  cada camada da rede neural, sendo a camada input = 0 e
+        # índices são associados �  cada camada da rede neural, sendo a camada input = 0 e
         # a camada output = -1 / último índice da lista.
         # =============================================================================
         matrix_activation_list = []

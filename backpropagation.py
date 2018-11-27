@@ -6,15 +6,13 @@ network_struct = read_networkstructfile(sys.argv[1])
 initial_weights = read_initialweightsfile(sys.argv[2])
 
 #le dataset
-num_colunaaserpredita = -1
 data = pd.read_csv(sys.argv[3]) #abre arquivo
-coluna_aserpredita = np.array(pd.DataFrame(data.iloc[:, num_colunaaserpredita]))
-dataset = np.array(data.drop(data.columns[num_colunaaserpredita], axis=1))
+y = np.array(pd.DataFrame(data.iloc[:, y_column]))
+dataset = np.array(data.drop(data.columns[y_column], axis=1))
 dataset = gl.normalization(dataset)
 
+n = NeuralNet(initial_weights = initial_weights,y= y, num_entrada = network_struct['num_entrada'],num_saida = network_struct['num_saida'],fator_reg = network_struct['fator_reg'],hidden_lengths =network_struct['hidden_lengths'])
 
-#TODO ler os arquivos acima
-n = NeuralNet()
 ## TODO: realizar o aprendizado etc
 
 
