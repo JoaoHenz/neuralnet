@@ -13,11 +13,14 @@ class NeuralNet(object):
     # de treino da rede.
     # =============================================================================
     def __init__(self, dataset, y, hidden_lengths = [8,8],fator_reg=0.25,num_saida = 1,num_entrada=1,initial_weights = []):
+
+        #TODO fazer a inicialização dos initial_weights se eles foram passados
+
         self.coluna_aserpredita = y
         self.data = dataset
         #self.num_input_nodes = self.data.shape[1]
         self.num_input_nodes = num_entrada
-        #TODO
+        #TODO arrumar questão do numero de inputs? e outputs?
         #        self.num_output_nodes = (np.unique(self.coluna_aserpredita)).shape[0]
         self.num_output_nodes = num_saida
         self.num_hidden_layers = len(hidden_lengths)
@@ -265,7 +268,6 @@ class NeuralNet(object):
             f.write('\n-> Layer ' + str(layer) + ' - Erros: \n\n')
             np.savetxt(f, self.errors[layer], delimiter='    ', fmt='%1.4f')
         f.close()
-
 
     def save_finalweights(self, testname = 'ultimoteste'):
         # pedido na definição do trab
