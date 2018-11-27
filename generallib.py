@@ -79,43 +79,41 @@ def normalization(data):
     #data = pd.read_csv("data/wine.csv")
     #data = np.array(data)
 
-
 def read_networkstructfile(filename):
     network_struct = {}
     list_stuff = []
 
-    f = open(filename,'a')
+    f = open(filename,'r')
 
     for line in f:
-        list_stuff.append((float)line)
+        list_stuff.append(float(line))
 
     network_struct['fator_reg'] = list_stuff[0]
-    network_struct['num_entrada'] = list_stuff[1]
-    network_struct['num_saida'] = list_stuff[len(lista_stuff)]
+    network_struct['num_entrada'] = int(list_stuff[1])
+    network_struct['num_saida'] = int(list_stuff[len(list_stuff)-1])
 
     hidden_lengths = []
-    for i in range(2,len(lista_stuff)-1):
-        hidden_lengths.append(list_stuff[i])
+    for i in range(2,len(list_stuff)-1):
+        hidden_lengths.append(int(list_stuff[i]))
     network_struct['hidden_lengths'] = hidden_lengths
     f.close()
 
     return network_struct
 
-
 def read_initialweightsfile(filename):
     initial_weights = []
 
-    f = open(filename,'a')
+    f = open(filename,'r')
 
     for line in f: #cada layer
         line.replace(' ','')
         layer_weights = []
-        nodes = line.split[';']
+        nodes = line.split(';')
         for i in range(0,len(nodes)): #para cada neuronio da layer
-            weigths = nodes.split[',']
+            weights = nodes[i].split(',')
             node_weights = []
             for i in range(0,len(weights)): #para cada peso da layer
-                node_weights.append((float)weights[i])
+                node_weights.append(float(weights[i]))
             layer_weights.append(node_weights)
         initial_weights.append(layer_weights)
 

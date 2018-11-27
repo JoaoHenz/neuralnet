@@ -12,7 +12,7 @@ class NeuralNet(object):
     # colocado diretamente ali dentro, pois estou primeiro tentando construir o algoritmo
     # de treino da rede.
     # =============================================================================
-    def __init__(self, dataset, y, hidden_lengths = [8,8],fator_reg=0.25,num_saida = 1,num_entrada,initial_weights = []):
+    def __init__(self, dataset, y, hidden_lengths = [8,8],fator_reg=0.25,num_saida = 1,num_entrada=1,initial_weights = []):
         self.coluna_aserpredita = y
         self.data = dataset
         #self.num_input_nodes = self.data.shape[1]
@@ -264,15 +264,19 @@ class NeuralNet(object):
             np.savetxt(f, self.weights[layer], delimiter='    ', fmt='%1.4f')
             f.write('\n-> Layer ' + str(layer) + ' - Erros: \n\n')
             np.savetxt(f, self.errors[layer], delimiter='    ', fmt='%1.4f')
-
-
-
-
         f.close()
+
 
     def save_finalweights(self, testname = 'ultimoteste'):
         # pedido na definição do trab
         #salva os pesos finais da Rede
+        self.weights = np.array(matrix_weight_list)
         f = open(testname+'_finalweights.txt', "a")
-        #TODO
+        for i in range(0, len(self.weights)):
+            line = ''
+            for j in range(0,len(self.weights[i])):
+                for k in range(0,len(self.weights[i][j])):
+                    line+= str(self.weights[i][j,k]) +','
+                line+=';'
+            f.write(line)
         f.close()
