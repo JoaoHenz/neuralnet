@@ -53,7 +53,95 @@ for layer_i in (range(num_layers))[0:-1]:
 activations[1]
 
 
+#n = NeuralNet(X_train, y_train, num_entrada = X.shape[1], num_saida = 3, hidden_lengths = [8], fator_reg=0.25)
+##n.savetofile(filename='lastneuralnet')
+#n.fit() #
+##n.savetofile(filename='lastneuralnet2')
+##
+#result = n.classify(X_test)
+###
+#from sklearn.metrics import confusion_matrix
+#cm = confusion_matrix(y_test, result)
+#acerto = cm[0,0] + cm [1, 1]
+#erro = cm[0,1] + cm [1, 0]
+#
+#acc = acerto/(acerto+erro)
 
+
+
+
+
+
+#theta1 = np.array([[0.4, 0.1], [0.3, 0.2]])
+#theta2 = np.array([[0.7, 0.5, 0.6]])
+#
+#dataset = np.array([[0.13, 0.9], [0.42, 0.23]])
+#y = np.transpose(np.array([dataset[:,-1]]))
+#dataset = np.transpose(np.array([dataset[:,0]]))
+#
+#pesos = np.array([theta1, theta2])
+#
+##n = NeuralNet(dataset, y, initial_weights = pesos)
+#n = NeuralNet(dataset, y)
+#
+##n.savetofile(filename='lastneuralnet')
+#n.fit() #
+##n.savetofile(filename='lastneuralnet2')
+
+
+##le dataset
+#y_column = -1
+#data = pd.read_csv("/mnt/Data/neuralnet/data/Churn_Modelling_Edited.csv")
+#
+#y = np.array(pd.DataFrame(data.iloc[:, y_column]))
+##
+#dataset = np.array(data.drop(data.columns[y_column], axis=1))
+
+#dataset = gl.normalization(dataset)
+#
+
+
+## Importing the dataset
+#dataset = pd.read_csv('data/wine.csv')
+#X = dataset.iloc[:, 3:13].values
+#y = dataset.iloc[:, 13].values
+#
+## Encoding categorical data
+#from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+#labelencoder_X_1 = LabelEncoder()
+#X[:, 1] = labelencoder_X_1.fit_transform(X[:, 1])
+#labelencoder_X_2 = LabelEncoder()
+#X[:, 2] = labelencoder_X_2.fit_transform(X[:, 2])
+#onehotencoder = OneHotEncoder(categorical_features = [1])
+#X = onehotencoder.fit_transform(X).toarray()
+#X = X[:, 1:]
+#
+## Splitting the dataset into the Training set and Test set
+#from sklearn.model_selection import train_test_split
+#X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 0)
+#
+## Feature Scaling
+#from sklearn.preprocessing import StandardScaler
+#sc = StandardScaler()
+#X_train = sc.fit_transform(X_train)
+#X_test = sc.transform(X_test)
+#
+#y_train = np.transpose(np.array([y_train]))
+#y_test = np.transpose(np.array([y_test]))
+#
+#n = NeuralNet(X_train, y_train, num_entrada = 11, num_saida = 2, hidden_lengths = [8,8])
+##n.savetofile(filename='lastneuralnet')
+#n.fit() #
+##n.savetofile(filename='lastneuralnet2')
+##
+#result = n.classify(X_test)
+##
+#from sklearn.metrics import confusion_matrix
+#cm = confusion_matrix(y_test, result)
+#acerto = cm[0,0] + cm [1, 1]
+#erro = cm[0,1] + cm [1, 0]
+#
+#acc = acerto/(acerto+erro)
 
     # =============================================================================
     # Feedforward da rede para uma instância de exemplo

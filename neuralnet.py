@@ -3,9 +3,10 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 import math
 
-global j_list
+global j_list, j_reg_list
 
 class NeuralNet(object):
     # =============================================================================
@@ -13,7 +14,7 @@ class NeuralNet(object):
     # colocado diretamente ali dentro, pois estou primeiro tentando construir o algoritmo
     # de treino da rede.
     # =============================================================================
-    def __init__(self, dataset, y, hidden_lengths = [8,8],fator_reg=0.25,num_saida = 1,num_entrada=1,initial_weights = []):
+    def __init__(self, dataset, y, hidden_lengths = [2], fator_reg = 0, num_saida = 2, num_entrada = 1, initial_weights = [], numeric = False):
 
         #TODO fazer a inicialização dos initial_weights se eles foram passados
 
@@ -36,9 +37,73 @@ class NeuralNet(object):
         self.fator_reg = fator_reg
         self.j = 0
         self.j_regularized = 0
-        self.initiliaze_structure()
+        self.numeric = numeric
+        
+        if len(initial_weights) == 0:
+          self.initialize_structure()
+        else:
+          self.initialize_with_weights(initial_weights)
 
-    def initiliaze_structure(self):
+        self.prepare_outputs_matrix()
+        
+    def prepare_outputs_matrix(self):
+        num_rows = self.coluna_aserpredita.shape[0]
+        
+        if self.numeric:
+            # Numeric Output
+            self.output_matrix = np.zeros((num_rows, self.coluna_aserpredita.shape[1], 1))
+            
+            for row_i in range(num_rows):
+                self.output_matrix[row_i] = np.transpose(np.array([self.coluna_aserpredita[row_i, :]]))
+        
+        else:
+            # Classifier
+            self.output_matrix = np.zeros((num_rows, self.num_output_nodes, 1))
+            
+            for row_i in range(num_rows):
+                out = int(self.coluna_aserpredita[row_i, 0])
+                self.output_matrix[row_i, out, 0] = 1
+
+        
+    def initialize_with_weights(self, initial_weights):
+        matrix_activation_list = []
+        matrix_gradient_list = []
+        matrix_error_list = []
+
+        # Input Layer
+        new_matrix_activation = np.random.rand(self.num_nodes_per_layer[0] + 1, 1)
+        new_matrix_activation[0, 0] = 1
+      
+        matrix_activation_list.append(new_matrix_activation)
+        matrix_gradient_list.append(np.zeros((self.num_nodes_per_layer[1], self.num_nodes_per_layer[0] + 1)))
+        matrix_error_list.append(np.array([[np.nan]]))
+
+        # Hidden Layers
+        for i in (range(self.num_layers))[1:-1]:
+            new_matrix_activation = np.random.rand(self.num_nodes_per_layer[i] + 1, 1)
+            new_matrix_activation[0, 0] = 1
+            matrix_activation_list.append(new_matrix_activation)
+            
+            new_matrix_error = np.empty((self.num_nodes_per_layer[i]+1, 1))
+            matrix_error_list.append(new_matrix_error)
+            
+            new_matrix_gradient = np.zeros((self.num_nodes_per_layer[i + 1], self.num_nodes_per_layer[i] + 1))
+            matrix_gradient_list.append(new_matrix_gradient)
+
+        # Output Layer
+        new_matrix_activation = np.random.rand(self.num_nodes_per_layer[-1] + 1, 1)
+        new_matrix_activation[0, 0] = 1
+        matrix_activation_list.append(new_matrix_activation)
+                
+        matrix_gradient_list.append(np.array([[np.nan]]))
+        matrix_error_list.append(np.random.rand(self.num_nodes_per_layer[-1] + 1, 1))
+        
+        self.activations = np.array(matrix_activation_list)        
+        self.weights = np.append(initial_weights, [np.nan])        
+        self.errors = np.array(matrix_error_list)
+        self.gradients = np.array(matrix_gradient_list)
+    
+    def initialize_structure(self):
         # =============================================================================
         # Inicializa a estrutura da rede neural. Criando quatro listas contendo matrizes,
         # uma para matrizes de ativaco, outra para os pesos, outra para os gradientes
@@ -92,11 +157,6 @@ class NeuralNet(object):
     def sigmoid(self, x):
         return 1.0/(1+ np.exp(-x))
 
-    def softmax(self, x):
-        """Compute softmax values for each sets of scores in x."""
-        e_x = np.exp(x - np.max(x))
-        return e_x / e_x.sum(axis=0) # only difference
-
     def feedforward(self, row_number):
         # =============================================================================
         # Feedforward da rede para uma instcncia de exemplo
@@ -112,9 +172,8 @@ class NeuralNet(object):
 
     def compute_errors(self, row_number):
         predict = self.activations[-1][1:]
-        predict = np.where(predict > 0.5, 1, 0)
-
-        output = self.coluna_aserpredita[row_number, :][0]
+        
+        output = self.output_matrix[row_number]
         self.errors[-1][1:] = np.subtract(predict, output)
 
         # Calculo dos deltas para hidden layers
@@ -129,8 +188,8 @@ class NeuralNet(object):
         # Calculo dos gradientes
         for layer_i in reversed((range(self.num_layers))[:-1]):
             activations_transposed = np.transpose(self.activations[layer_i])
-            part1 = np.dot(self.errors[layer_i+1][1:], activations_transposed)
-            self.gradients[layer_i] = np.add(part1, self.gradients[layer_i])
+            gradient_layer_i = np.dot(self.errors[layer_i+1][1:], activations_transposed)
+            self.gradients[layer_i] = np.add(gradient_layer_i, self.gradients[layer_i])
 
     def compute_final_gradients(self, num_examples):
         # Calculo dos gradientes finais
@@ -141,20 +200,19 @@ class NeuralNet(object):
             matrix_p[:, 0] = 0
 
             d = np.add(self.gradients[layer_i], matrix_p)
-            self.gradients[layer_i] = np.multiply((1/num_examples), d)
-
+            self.gradients[layer_i] = np.divide(d, num_examples)
+            
     def update_weights(self):
         for layer_i in reversed((range(self.num_layers))[:-1]):
             part1 = np.multiply(self.learning_rate, self.gradients[layer_i])
             self.weights[layer_i] = np.subtract(self.weights[layer_i], part1)
 
     def compute_j(self, row_number):
-        output = np.array([self.coluna_aserpredita[row_number, :]])
+        output = self.output_matrix[row_number]
         predict = self.activations[-1][1:]
-#        predict = np.where(predict > 0.5, 1, 0)
-
-        part1 = np.multiply((-output), np.log10(predict))
-        part2 = np.multiply((1 - output), np.log10(1 - predict))
+        
+        part1 = np.multiply((-output), np.log(predict))
+        part2 = np.multiply((1 - output), np.log(1 - predict))
         j = np.subtract(part1, part2)
         self.j = self.j + np.sum(j)
 
@@ -177,109 +235,80 @@ class NeuralNet(object):
         for layer_i in (range(self.num_layers))[1:-1]:
             self.activations[layer_i][1:] = self.sigmoid(np.dot(self.weights[layer_i-1], self.activations[layer_i-1]))
 
-        return self.sigmoid(np.dot(self.weights[-2], self.activations[-2]))[0][0]
+        return self.sigmoid(np.dot(self.weights[-2], self.activations[-2]))
 
     def classify(self, instances):
         num_rows = instances.shape[0]
         results = np.zeros((num_rows, 1))
 
         for row_i in range(num_rows):
-            results[row_i,0] = self.feedforward_classify(instances[row_i,:])
+            results[row_i,0] = np.argmax(self.feedforward_classify(instances[row_i,:]))
 
         return results
 
     def compute_j_regularized(self, num_training_rows):
-        self.j = self.j / num_training_rows
+        j = self.j / num_training_rows
         s = self.sum_weights_squared()
-        self.j_regularized = (self.fator_reg / (2 * num_training_rows)) * s
-
+        s = (self.fator_reg / (2 * num_training_rows)) * s
+        self.j_regularized = j + s
+  
     # =============================================================================
-    # teste
+    # TODO
     # =============================================================================
     def zerar_matrix(self):
         for layer_i in (range(self.num_layers))[0:-1]:
             self.gradients[layer_i].fill(0)
 
-    def fit(self,show=False,filenamefig='lastfitresuslt'):
-        # funco de treinamento do modelo
+    def fit(self, epochs = 10, batch_size = 10, show = False, verbose = True, filenamefig = 'lastfitresuslt'):
         num_training_rows = self.data.shape[0]
-        num_mini_batch = 50
-        num_loops = math.floor(num_training_rows / num_mini_batch)
-        num_rows_rest = num_training_rows - (num_loops*num_mini_batch)
-
-        global j_list
+        num_loops = math.floor(num_training_rows / batch_size)
+        num_rows_rest = num_training_rows - (num_loops*batch_size)
+        
+        global j_list,j_list2
         j_list = []
-
-        repetitions = 50
-
-        for i in range(repetitions):
-            self.j = 0
-            mini_i = 0
-            print("Treinando Loop " + str(i+1) + "/" + str(repetitions))
-
+        j_reg_list = []                    
+        
+        for epoch_i in range(epochs):
+            start_runtime_epoch = time.time()
+            
+            if verbose:
+              print("Epoch " + str(epoch_i+1) + "/" + str(epochs))
+            
             for row_number in range(num_training_rows):
                 self.feedforward(row_number)
                 self.compute_errors(row_number)
                 self.accumulate_gradients()
                 self.compute_j(row_number)
 
-                if (row_number % num_mini_batch == 0) and row_number != 0:
-                    mini_i += 1
-#                    print("Mini-batch " + str(mini_i+1) + "/" + str(num_mini_batch+1))
+                if (row_number % batch_size == 0) and row_number != 0:
                     # Regularizaco e Atualizacao de gradientes
-                    self.compute_final_gradients(num_mini_batch)
+                    self.compute_final_gradients(batch_size)
                     self.update_weights()
                     self.zerar_matrix()
-
-            if num_rows_rest > 0:
+                                    
+            if num_rows_rest > 0:                             
                 # Regularizaco e Atualizacao de gradientes
                 self.compute_final_gradients(num_rows_rest)
                 self.update_weights()
                 self.zerar_matrix()
-
-            # J Regularizado
-            self.compute_j_regularized(num_mini_batch)
+            
+            self.compute_j_regularized(num_training_rows)
+            total_runtime_epoch = time.time() - start_runtime_epoch
+            if verbose:
+                print(str(num_training_rows) + "/" + str(num_training_rows) + " – " + str("%.2f" % total_runtime_epoch) + "s – J: " + str(self.j) + " – J Reg: " + str(self.j_regularized))
+            
             j_list.append(self.j)
-
-
-
-#        for i in range(loops):
-#            self.j = 0
-#            print("Treinando Loop " + str(i+1) + "/" + str(loops))
-#            # Pra todos os exemplos
-#            for row_number in range(num_training_rows):
-#                #                print("Treinando exemplo " + str(row_number+1) + "/" + str(num_training_rows))
-#                self.feedforward(row_number)
-#
-#                self.compute_j(row_number)
-#
-#                self.compute_errors(row_number)
-#                self.accumulate_gradients()
-#
-#            # J Regularizado
-#            self.compute_j_regularized(num_training_rows)
-#
-#            # Regularizaco e Atualizaco de gradientes
-#            self.compute_final_gradients(num_training_rows)
-#            self.update_weights()
-#
-#            j_list.append(self.j)
-#            self.zerar_matrix()
-
-
-
-
-
-
-
-
-
-#        axis_x = range(num_loops)
+            j_reg_list.append(self.j_regularized)
+            
+            self.j = 0
+            self.j_regularized = 0
+            
+#        axis_x = range(len(j_list))
 #
 #        fig, ax = plt.subplots()
 #        ax.plot(axis_x, j_list)
 #
-#        ax.set(xlabel='Loop', ylabel='Error)', title='Error vs Loop')
+#        ax.set(xlabel='Loop', ylabel='J)', title='J vs Loop')
 #        ax.grid()
 #
 #        if show:
@@ -287,6 +316,20 @@ class NeuralNet(object):
 #            plt.show()
 #        else:
 #            plt.savefig(filenamefig+'.png')
+#            
+#        axis_x = range(len(j_list2))
+#
+#        fig, ax = plt.subplots()
+#        ax.plot(axis_x, j_list2)
+#
+#        ax.set(xlabel='Loop', ylabel='J_Reg)', title='J Regularized vs Loop')
+#        ax.grid()
+#
+#        if show:
+#            plt.savefig(filenamefig+'2.png')
+#            plt.show()
+#        else:
+#            plt.savefig(filenamefig+'2.png')
 
     def savetofile(self, filename='lastneuralnet'):
         # =============================================================================
@@ -321,7 +364,8 @@ class NeuralNet(object):
     def save_finalweights(self, testname = 'ultimoteste'):
         # pedido na definico do trab
         #salva os pesos finais da Rede
-        self.weights = np.array(matrix_weight_list)
+        #TODO
+#        self.weights = np.array(matrix_weight_list)
         f = open(testname+'_finalweights.txt', "a")
         for i in range(0, len(self.weights)):
             line = ''
@@ -331,61 +375,4 @@ class NeuralNet(object):
                 line+=';'
             f.write(line)
         f.close()
-
-
-
-import pandas as pd
-import generallib as gl
-
-##le dataset
-#y_column = -1
-#data = pd.read_csv("/mnt/Data/neuralnet/data/Churn_Modelling_Edited.csv")
-#
-#y = np.array(pd.DataFrame(data.iloc[:, y_column]))
-##
-#dataset = np.array(data.drop(data.columns[y_column], axis=1))
-
-#dataset = gl.normalization(dataset)
-#
-
-
-# Importing the dataset
-dataset = pd.read_csv('data/Churn_Modelling.csv')
-X = dataset.iloc[:, 3:13].values
-y = dataset.iloc[:, 13].values
-
-# Encoding categorical data
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
-labelencoder_X_1 = LabelEncoder()
-X[:, 1] = labelencoder_X_1.fit_transform(X[:, 1])
-labelencoder_X_2 = LabelEncoder()
-X[:, 2] = labelencoder_X_2.fit_transform(X[:, 2])
-onehotencoder = OneHotEncoder(categorical_features = [1])
-X = onehotencoder.fit_transform(X).toarray()
-X = X[:, 1:]
-
-# Splitting the dataset into the Training set and Test set
-from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 0)
-
-# Feature Scaling
-from sklearn.preprocessing import StandardScaler
-sc = StandardScaler()
-X_train = sc.fit_transform(X_train)
-X_test = sc.transform(X_test)
-
-y_train = np.transpose(np.array([y_train]))
-y_test = np.transpose(np.array([y_test]))
-
-n = NeuralNet(X_train, y_train)
-n.savetofile(filename='lastneuralnet')
-n.fit() #
-n.savetofile(filename='lastneuralnet2')
-
-result = n.classify(X_test)
-
-result = (result > 0.5)
-expected = (y_test > 0.5)
-
-from sklearn.metrics import confusion_matrix
-cm = confusion_matrix(expected, result)
+        
