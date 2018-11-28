@@ -1,7 +1,4 @@
-
 import numpy as np
-
-
 
 def stratified_k_fold(k_folds, y_column, dataframe):
     # =============================================================================
@@ -18,7 +15,7 @@ def stratified_k_fold(k_folds, y_column, dataframe):
 
     *Qualquer instância do dataframe original deve estar somente em um único fold.
     """
-
+    dataframe = dataframe.reset_index(drop = True)
     y = dataframe.iloc[:,y_column]
     classes = np.unique(y.iloc[:])
     num_per_fold = {}

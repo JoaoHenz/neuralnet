@@ -7,7 +7,6 @@ from sklearn.metrics import confusion_matrix
 y_column = 0
 num_kfolds = 10
 dataset = pd.read_csv('data/wine.csv')
-k_fold_datasets = gl.stratified_k_fold(num_kfolds, y_column, dataset)
 
 def k_fold_training():
     folds_original = gl.stratified_k_fold(num_kfolds, y_column, dataset)
