@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Nov 26 22:12:23 2018
-
-@author: jcdazeredo
-"""
 
 from neuralnet import *
 import pandas as pd
@@ -16,10 +9,9 @@ import generallib as gl
 
 #le dataset
 y_column = -1
+
 data = pd.read_csv("data/Churn_Modelling_Edited.csv") #abre arquivo
-
 y = np.array(pd.DataFrame(data.iloc[:, y_column]))
-
 dataset = np.array(data.drop(data.columns[y_column], axis=1))
 dataset = gl.normalization(dataset)
 
