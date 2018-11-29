@@ -14,16 +14,11 @@ class NeuralNet(object):
     # colocado diretamente ali dentro, pois estou primeiro tentando construir o algoritmo
     # de treino da rede.
     # =============================================================================
-    def __init__(self, dataset, y, hidden_lengths = [2], fator_reg = 0, num_saida = 2, num_entrada = 1, initial_weights = [], numeric = False):
-
-        #TODO fazer a inicialização dos initial_weights se eles foram passados
+    def __init__(self, dataset, y, hidden_lengths = [4], learning_rate = 0.1, fator_reg = 0, num_saida = 2, num_entrada = 1, initial_weights = [], numeric = False):
 
         self.coluna_aserpredita = y
         self.data = dataset
-        #self.num_input_nodes = self.data.shape[1]
         self.num_input_nodes = num_entrada
-        #TODO arrumar questão do numero de inputs? e outputs?
-        #        self.num_output_nodes = (np.unique(self.coluna_aserpredita)).shape[0]
         self.num_output_nodes = num_saida
         self.num_hidden_layers = len(hidden_lengths)
         self.num_nodes_per_hidden_layer = hidden_lengths
@@ -33,7 +28,7 @@ class NeuralNet(object):
         self.num_nodes_per_layer[0] = self.num_input_nodes
         self.num_nodes_per_layer[-1] = self.num_output_nodes
 
-        self.learning_rate = 0.1
+        self.learning_rate = learning_rate
         self.fator_reg = fator_reg
         self.j = 0
         self.j_regularized = 0
@@ -55,7 +50,7 @@ class NeuralNet(object):
             
             for row_i in range(num_rows):
                 self.output_matrix[row_i] = np.transpose(np.array([self.coluna_aserpredita[row_i, :]]))
-        
+  
         else:
             # Classifier
             self.output_matrix = np.zeros((num_rows, self.num_output_nodes, 1))

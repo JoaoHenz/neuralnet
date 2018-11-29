@@ -1,4 +1,47 @@
 import numpy as np
+import pandas as pd
+import neuralnet as nn
+import math
+from sklearn.metrics import confusion_matrix
+
+def calcula_f1measure(matrix,beta):
+    precision = []
+    recall = []
+    truepositive = []
+
+    for i in range(0,len(matrix)):
+        for j in range(0,len(matrix[0])):
+            if i == j:
+                truepositive.append(matrix[i][j])
+
+    for i in range(0,len(truepositive)):
+        precision.append(truepositive[i]/sum(matrix[i,:]))
+        recall.append(truepositive[i]/sum(matrix[:,i]))
+
+    for i in range(0,len(recall)):
+        if math.isnan(recall[i]):
+            recall[i]=1
+
+    for i in range(0,len(precision)):
+        if math.isnan(precision[i]):
+            precision[i]=1
+
+    recall = sum(recall)/len(recall)
+    precision = sum(precision)/len(precision)
+
+    f1_measure = 2 * (precision * recall)/(precision + recall)
+    if math.isnan(f1_measure):
+        f1_measure=1
+    return f1_measure
+
+def f1measure_emlista(matrix_list, beta):
+    f1measure_mediatotal = []
+    for i in range(0,len(matrix_list)):
+        f1measure_mediatotal.append(calcula_f1measure(matrix_list[i],beta))
+    return (sum(f1measure_mediatotal)/len(f1measure_mediatotal))
+
+def mean_acc(acc_list):
+    return (sum(acc_list)/len(acc_list))
 
 def stratified_k_fold(k_folds, y_column, dataframe):
     # =============================================================================
@@ -49,15 +92,14 @@ def stratified_k_fold(k_folds, y_column, dataframe):
 
     return k_fold_dataframes
 
-    #data = pd.read_csv("wine.csv", header = None)
-    #
-    #x = stratified_k_fold(10, 0, data)
-
 def normalization_x(x, v_max, v_min):
     # =============================================================================
     # Função que cálcula a normalização de um valor para o intervalo [-1, 1]
     # =============================================================================
-    return (2*(((x-v_min)/(v_max - v_min)))) -1
+    if v_max - v_min != 0:
+        return (2*(((x-v_min)/(v_max - v_min)))) -1
+    else:
+        return x
 
 def normalization(data):
     # =============================================================================
@@ -73,9 +115,6 @@ def normalization(data):
         new_data[:, column_i] = normalization_x(data[:, column_i], v_max, v_min)
 
     return new_data
-
-    #data = pd.read_csv("data/wine.csv")
-    #data = np.array(data)
 
 def read_networkstructfile(filename):
     network_struct = {}
@@ -125,7 +164,7 @@ def read_dataset(filename):
     f = open(filename,'r')
 
     for line in f:
-        dic_intancia = {}
+        dic_instancia = {}
         line.replace(' ','')
         splits = line.split(';')
         for i in range(0,len(splits)):
@@ -134,10 +173,10 @@ def read_dataset(filename):
             for j in range(0,len(supersplits)):
                 lista_valores.append(supersplits[j])
             if i ==0:
-                dic_intancia['atributos'] = lista_valores
+                dic_instancia['atributos'] = lista_valores
             else:
-                dic_intancia['saidas'] = lista_valores
-        dataset.append(dic_intancia)
+                dic_instancia['saidas'] = lista_valores
+        dataset.append(dic_instancia)
 
     f.close()
     return dataset
@@ -151,3 +190,60 @@ def grad_estacorreto(funcao,gradiente,x,epsilon=0.01, max_delta=0.1):
         return False
     else:
         return True
+
+def transform_y(dataset, y_column):
+    df = dataset.copy()
+    classes_transform = {}
+    classes = np.unique(df.iloc[:,y_column])
+    
+    for i in range(len(classes)):
+        cl = classes[i]
+        classes_transform[i] = cl
+        df.iloc[:,y_column] = df.iloc[:,y_column].replace(cl, i)
+    
+    return df, classes_transform
+    
+def k_fold_training(k, dataset, y_column, epochs, batch_size, hidden_lengths = [24, 24], fator_reg = 0.25):
+    folds_original = stratified_k_fold(k, y_column, dataset)
+    cm_list = []
+    accuracy_list = []
+
+    print("###### K-FOLD RUNNING ######")
+    print()
+    
+    for i in range(k):
+        folds = folds_original.copy()
+        teste = np.array(folds.pop(i))
+        treino = folds        
+        treino = np.array(pd.concat(folds))
+            
+        X_train = np.delete(treino, y_column, 1)
+        X_train = normalization(X_train)
+        y_train = np.transpose(np.array([treino[:, y_column]]))
+        
+        X_test = np.delete(teste, y_column, 1)
+        X_test = normalization(X_test)
+        y_test = np.transpose(np.array([teste[:, y_column]]))
+        
+        num_input = dataset.shape[1]-1
+        num_output = len(np.unique(dataset.iloc[:,y_column]))
+        
+        net = nn.NeuralNet(X_train, y_train, num_entrada = num_input, num_saida = num_output, hidden_lengths = hidden_lengths, fator_reg = fator_reg)
+        print()
+        print("###### TRAINING - " + str(i+1) + "/" + str(k) + " folds ######")
+        net.fit(epochs = epochs, batch_size = batch_size)
+        
+        print()
+        print("###### TESTING ######")
+        print()
+        y_pred = net.classify(X_test)
+        
+        # Resultado do classificador
+        classifier_result = y_pred == y_test
+        accuracy = np.sum(classifier_result) / y_test.shape[0]
+        print("Parcial Accuracy: " + str("%.3f" % accuracy))
+        accuracy_list.append(accuracy)
+        cm = confusion_matrix(y_test, y_pred)
+        cm_list.append(cm)
+        
+    return accuracy_list, cm_list
