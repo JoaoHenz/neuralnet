@@ -4,7 +4,8 @@ import generallib as gl
 import neuralnet as nn
 
 ### CLASSIFICAR DATASETS ###
-correcao = True
+#correcao = True
+correcao = False
 
 if correcao:
     network_file = "network.txt"
@@ -13,12 +14,11 @@ if correcao:
     
     estrutura_rede = gl.read_networkstructfile(network_file)
     pesos_iniciais = gl.read_initialweightsfile(weights_file)
+#    X_train = np.array([[0.32000, 0.68000], [0.83000, 0.02000]])
+#    y_train = np.array([[0.75000, 0.98000], [0.75000, 0.28000]])
     X_train = np.array([[0.13000], [0.42000]])
     y_train = np.array([[0.90000], [0.23000]])
     
-    epochs = 1
-    batch_size = X_train.shape[0]
-
     net = nn.NeuralNet(X_train, 
                        y_train, 
                        hidden_lengths = estrutura_rede["hidden_lengths"], 
@@ -29,18 +29,15 @@ if correcao:
                        numeric = True
                        )
     
-    net.fit(epochs = epochs, 
-           batch_size = batch_size,
-           verbose = False,
+    net.fit(verbose = False,
            save_gradients = True
            )
         
-
-  
 else:
     y_column = 0
     dataset = pd.read_csv('data/cancer.csv')
     dataset, transformation = gl.transform_y(dataset, y_column)
+    beta = 1
     
     num_kfolds = 10
     epochs = 10
@@ -48,7 +45,7 @@ else:
     
     acc, cm = gl.k_fold_training(num_kfolds, dataset, y_column, epochs, batch_size)
     
-    f1_measure = gl.f1measure_emlista(np.array(cm), 1)
+    f1_measure = gl.f1measure_emlista(np.array(cm), beta)
     
     print("\n\n########### RESULTADOS FINAIS ###########\n")
     
