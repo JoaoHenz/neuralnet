@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -254,7 +253,7 @@ class NeuralNet(object):
         for layer_i in (range(self.num_layers))[0:-1]:
             self.gradients[layer_i].fill(0)
 
-    def fit(self, epochs = 10, batch_size = 10, show = False, verbose = True, filenamefig = 'lastfitresuslt'):
+    def fit(self, epochs = 10, batch_size = 10, show = False, verbose = True, filenamefig = 'lastfitresuslt', save_gradients = False):
         num_training_rows = self.data.shape[0]
         num_loops = math.floor(num_training_rows / batch_size)
         num_rows_rest = num_training_rows - (num_loops*batch_size)
@@ -275,16 +274,24 @@ class NeuralNet(object):
                 self.accumulate_gradients()
                 self.compute_j(row_number)
 
-                if (row_number % batch_size == 0) and row_number != 0:
+                if (row_number % batch_size-1 == 0) and row_number != 0:
                     # Regularizaco e Atualizacao de gradientes
                     self.compute_final_gradients(batch_size)
                     self.update_weights()
+                    
+                    if save_gradients:
+                        self.save_finalgradients()
                     self.zerar_matrix()
-                                    
+                    
+                    
             if num_rows_rest > 0:                             
                 # Regularizaco e Atualizacao de gradientes
                 self.compute_final_gradients(num_rows_rest)
                 self.update_weights()
+               
+                if save_gradients:
+                    self.save_finalgradients()
+                    
                 self.zerar_matrix()
             
             self.compute_j_regularized(num_training_rows)
@@ -297,7 +304,7 @@ class NeuralNet(object):
             
             self.j = 0
             self.j_regularized = 0
-            
+        
 #        axis_x = range(len(j_list))
 #
 #        fig, ax = plt.subplots()
@@ -356,18 +363,26 @@ class NeuralNet(object):
             np.savetxt(f, self.errors[layer], delimiter='    ', fmt='%1.4f')
         f.close()
 
-    def save_finalweights(self, testname = 'ultimoteste'):
+    def save_finalgradients(self, filename = 'gradients'):
         # pedido na definico do trab
         #salva os pesos finais da Rede
         #TODO
 #        self.weights = np.array(matrix_weight_list)
-        f = open(testname+'_finalweights.txt', "a")
-        for i in range(0, len(self.weights)):
+        f = open(filename + '_finalgradients.txt', "w+")
+        for i in range(len(self.gradients)-1):
             line = ''
-            for j in range(0,len(self.weights[i])):
-                for k in range(0,len(self.weights[i][j])):
-                    line+= str(self.weights[i][j,k]) +','
-                line+=';'
+            for j in range(len(self.gradients[i])):
+                for k in range(len(self.gradients[i][j])):
+                    line += "%.5f" % self.gradients[i][j,k]
+                    
+                    if k != len(self.gradients[i][j])-1:
+                      line += ', '
+                
+                if j != len(self.gradients[i]) -1:
+                  line += '; '
             f.write(line)
+            
+            if i != len(self.gradients)-2:
+              f.write("\n")
         f.close()
         
