@@ -5,28 +5,28 @@ import math
 from sklearn.metrics import confusion_matrix
 
 def string_erro_gradients(list_numeric_gradients, list_back_gradients):
-    line = ''  
-    
+    line = ''
+
     for layer_i in range(list_numeric_gradients.shape[0]-1):
         erro = np.linalg.norm(np.subtract(list_numeric_gradients[layer_i], list_back_gradients[layer_i]))
         line += 'Theta ' + str(layer_i) + ': ' + str(erro)
-        
+
         if layer_i != list_numeric_gradients.shape[0]-2:
             line += '\n'
-            
+
     return line
 
 def salvar_dados_corretude(string_numeric, string_back, string_error, filename = "resultado_corretude.txt"):
     f = open(filename, "w+")
-    
+
     f.write("Gradientes calculados numericamente:\n\n")
     f.write(string_numeric)
     f.write("\n\n")
-    
+
     f.write("Gradientes calculados por Backpropagation:\n\n")
     f.write(string_back)
     f.write("\n\n")
-    
+
     f.write("Erro entre gradiente via backprop e gradiente numerico:\n\n")
     f.write(string_error)
 
@@ -210,18 +210,18 @@ def read_dataset(filename):
 
     X = []
     y = []
-    
+
     for i in range(len(dataset)):
         d = dataset[i]
         att = d["atributos"]
         out = d["saidas"]
-        
+
         X.append(att)
         y.append(out)
-    
+
     X = np.array(X)
     y = np.array(y)
-    
+
     return X, y
 
 def transform_y(dataset, y_column):
