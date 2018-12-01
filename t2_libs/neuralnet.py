@@ -209,6 +209,7 @@ class NeuralNet(object):
         part2 = np.multiply((1 - output), np.log(1 - predict))
         j = np.subtract(part1, part2)
         self.j = self.j + np.sum(j)
+        return np.sum(j)
 
     def sum_weights_squared(self):
         result = 0
@@ -218,7 +219,7 @@ class NeuralNet(object):
             result = result + np.sum(part1)
 
         return result
-
+      
     def feedforward_classify(self, row_instance):
         # =============================================================================
         # Feedforward da rede para uma instcncia de exemplo
@@ -240,15 +241,79 @@ class NeuralNet(object):
 
         return results
 
+    def compute_j_verification(self, num_training_rows):
+        j = self.j / num_training_rows
+        s = self.sum_weights_squared()
+        s = (self.fator_reg / (2 * num_training_rows)) * s
+        return j + s
+
     def compute_j_regularized(self, num_training_rows):
         j = self.j / num_training_rows
         s = self.sum_weights_squared()
         s = (self.fator_reg / (2 * num_training_rows)) * s
-        self.j_regularized = j + s
-  
-    # =============================================================================
-    # TODO
-    # =============================================================================
+        self.j_regularized = j + s  
+    
+    def fit_back(self):
+        # Backpropagation
+        num_training_rows = self.data.shape[0]
+        batch_size = num_training_rows
+        
+        for epoch_i in range(1):
+            for row_number in range(num_training_rows):
+                self.feedforward(row_number)
+                self.compute_errors(row_number)
+                self.accumulate_gradients()
+                self.compute_j(row_number)
+
+                if (row_number % batch_size-1 == 0) and row_number != 0:
+                    # Regularizaco e Atualizacao de gradientes
+                    self.compute_final_gradients(batch_size)
+                    self.update_weights()
+                    
+                    
+            self.compute_j_regularized(num_training_rows)
+    
+        return self.gradients
+    
+    def fit_numeric(self, e = 0.000001):
+        estimated_gradients = np.copy(self.gradients)
+        new_weights = np.copy(self.weights)
+        
+        num_training_rows = self.data.shape[0]
+        
+        # Verificacao Numerica
+        # Executa a estimativa numerica pra cada um dos pesos
+        for layer_i in range(estimated_gradients.shape[0]-1):
+            for line_i in range(estimated_gradients[layer_i].shape[0]):
+                for column_i in range(estimated_gradients[layer_i].shape[1]):
+                    # +e  
+                    new_weights[layer_i][line_i, column_i] += e
+                    
+                    for row_i in range(num_training_rows):
+                        self.feedforward(row_i)
+                        self.compute_j(row_i)
+                        
+                    error_f1 = self.compute_j_verification(num_training_rows)
+                    self.j = 0
+                    
+                    # -e  
+                    new_weights[layer_i][line_i, column_i] -= 2*e
+                    
+                    for row_i in range(num_training_rows):
+                        self.feedforward(row_i)
+                        self.compute_j(row_i)
+                        
+                    error_f2 = self.compute_j_verification(num_training_rows)
+                    self.j = 0
+                    
+                    # Volta com valor normal
+                    new_weights[layer_i][line_i, column_i] += e
+                    
+                    # Guarda na matriz o valor estimado
+                    estimated_gradients[layer_i][line_i, column_i] = (error_f1 - error_f2)/(2*e)
+     
+        return estimated_gradients             
+
     def zerar_matrix(self):
         for layer_i in (range(self.num_layers))[0:-1]:
             self.gradients[layer_i].fill(0)
@@ -301,7 +366,7 @@ class NeuralNet(object):
             
             total_runtime_epoch = time.time() - start_runtime_epoch
             if verbose:
-                print(str(num_training_rows) + "/" + str(num_training_rows) + " – " + str("%.2f" % total_runtime_epoch) + "s – J: " + str(self.j) + " – J Reg: " + str(self.j_regularized))
+                print(str(num_training_rows) + "/" + str(num_training_rows) + " – " + str("%.2f" % total_runtime_epoch) + "s – J Reg: " + str(self.j_regularized))
             
             j_list.append(self.j)
             j_reg_list.append(self.j_regularized)
@@ -370,20 +435,23 @@ class NeuralNet(object):
             np.savetxt(f, self.errors[layer], delimiter='    ', fmt='%1.4f')
         f.close()
     
-    def string_gradients(self):
+    def string_gradients(self, gradients, f = 5):
         line = ''
-        for i in range(len(self.gradients)-1):
-            for j in range(len(self.gradients[i])):
-                for k in range(len(self.gradients[i][j])):
-                    line += "%.5f" % self.gradients[i][j,k]
+        for i in range(len(gradients)-1):
+            for j in range(len(gradients[i])):
+                for k in range(len(gradients[i][j])):
+                    if f == 5:
+                        line += "%.5f" % gradients[i][j,k]
+                    else:
+                        line += "%.15f" % gradients[i][j,k]
                     
-                    if k != len(self.gradients[i][j])-1:
+                    if k != len(gradients[i][j])-1:
                         line += ', '
                 
-                if j != len(self.gradients[i]) -1:
+                if j != len(gradients[i]) -1:
                     line += '; '
             
-            if i != len(self.gradients)-2:
+            if i != len(gradients)-2:
                 line += "\n"
          
         return line
@@ -405,13 +473,13 @@ class NeuralNet(object):
             if line_i != self.data.shape[0]-1:
                 line += "\n"
         
-        return line
+        return line       
     
     def save_final_report(self, filename = 'final'):
         f = open(filename + '_report.txt', "w+")
         
         # Escreve gradientes dos pesos
-        f.write(self.string_gradients())
+        f.write(self.string_gradients(self.gradients))
         
         f.write("\n\n")
         
@@ -420,10 +488,8 @@ class NeuralNet(object):
         
         f.write("\n\n")
         
-        f.write("J: %.5f \n" % self.j)
         f.write("J Regularizado: %.5f\n\n" % self.j_regularized)
         # Escreve dataset
         f.write(self.string_dataset())
 
         f.close()
-        
