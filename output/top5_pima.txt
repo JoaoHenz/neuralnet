@@ -1,0 +1,62 @@
+Top 5 parametros para o dataset data/pima.csv:
+
+F1: 0.6665820986961957
+Acc Mean: 0.7089598997493735
+Acc Std: 0.055994498709959116
+J Mean: 1.3017558566612601
+J Std: 0.03505076517758469
+Num Hidden Layers: 1
+Nodes/Hidden Layer: 5
+Learning Rate: 0.3
+Fator Reg: 0.25
+
+
+
+F1: 0.6834762985919719
+Acc Mean: 0.7028822055137844
+Acc Std: 0.047853706653836856
+J Mean: 1.2983553167516213
+J Std: 0.04666403296807224
+Num Hidden Layers: 1
+Nodes/Hidden Layer: 24
+Learning Rate: 0.1
+Fator Reg: 0.1
+
+
+
+F1: 0.7007774694214274
+Acc Mean: 0.699749373433584
+Acc Std: 0.06814823155828614
+J Mean: 1.3088338994666806
+J Std: 0.026363398136947987
+Num Hidden Layers: 1
+Nodes/Hidden Layer: 5
+Learning Rate: 0.5
+Fator Reg: 0.25
+
+
+
+F1: 0.6851787742690088
+Acc Mean: 0.6986842105263158
+Acc Std: 0.0851487391980139
+J Mean: 1.2972707868786975
+J Std: 0.027865864085934538
+Num Hidden Layers: 1
+Nodes/Hidden Layer: 24
+Learning Rate: 0.1
+Fator Reg: 0.5
+
+
+
+F1: 0.66769027130245
+Acc Mean: 0.6974310776942356
+Acc Std: 0.06526554717685025
+J Mean: 1.304034471886109
+J Std: 0.03920095308995262
+Num Hidden Layers: 1
+Nodes/Hidden Layer: 5
+Learning Rate: 0.3
+Fator Reg: 0.1
+
+
+
