@@ -4,8 +4,8 @@ import time
 import pandas as pd
 import generallib as gl
 
-y_column = 0
-filename = "data/wine.csv"
+y_column = -1
+filename = "data/ionosphere.csv"
 dataset = pd.read_csv(filename)
 dataset, transformation = gl.transform_y(dataset, y_column)
 
@@ -39,10 +39,10 @@ for i in range(len(variacoes[0])):
         for k in range(len(variacoes[2])):
             for l in range(len(variacoes[3])):
                 print("Variacao " + str(atual) + "/" + str(total_variations))
-                result = gl.k_fold_training(num_kfolds, 
-                                            dataset, 
-                                            y_column, 
-                                            epochs, 
+                result = gl.k_fold_training(num_kfolds,
+                                            dataset,
+                                            y_column,
+                                            epochs,
                                             batch_size,
                                             hidden_lengths = network,
                                             fator_reg = variacoes[2][k],

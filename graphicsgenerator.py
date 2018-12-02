@@ -22,7 +22,7 @@ for i in range(top):
     melhores.append(melhor)
     res = np.delete(res, index)
     res2 = np.delete(res2, index)
-    
+
 
 f = open('output/top5.txt', "w+")
 f.write("Top 5 parametros para o dataset " + melhores[0].filename + ":\n\n")
