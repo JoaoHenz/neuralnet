@@ -317,11 +317,13 @@ class NeuralNet(object):
         for layer_i in (range(self.num_layers))[0:-1]:
             self.gradients[layer_i].fill(0)
 
-    def fit(self, epochs = 1, batch_size = 0, show = False, verbose = True, filenamefig = 'lastfitresuslt', save_gradients = False):
+    def fit(self, epochs = 1, batch_size = 0, verbose = True, save_gradients = False):
         start_runtime_total = time.time()
         num_training_rows = self.data.shape[0]
         if batch_size == 0:
             batch_size = num_training_rows
+        elif batch_size == 1:
+            batch_size = 2
         num_loops = math.floor(num_training_rows / batch_size)
         num_rows_rest = num_training_rows - (num_loops*batch_size)
 
@@ -373,36 +375,11 @@ class NeuralNet(object):
             self.j = 0
             self.j_regularized = 0
             final_runtime_total = time.time() - start_runtime_total
-            if verbose:
-                print(str("%.4f" % final_runtime_total))
-
-        #        axis_x = range(len(j_list))
-        #
-        #        fig, ax = plt.subplots()
-        #        ax.plot(axis_x, j_list)
-        #
-        #        ax.set(xlabel='Loop', ylabel='J)', title='J vs Loop')
-        #        ax.grid()
-        #
-        #        if show:
-        #            plt.savefig(filenamefig+'.png')
-        #            plt.show()
-        #        else:
-        #            plt.savefig(filenamefig+'.png')
-        #
-        #        axis_x = range(len(j_list2))
-        #
-        #        fig, ax = plt.subplots()
-        #        ax.plot(axis_x, j_list2)
-        #
-        #        ax.set(xlabel='Loop', ylabel='J_Reg)', title='J Regularized vs Loop')
-        #        ax.grid()
-        #
-        #        if show:
-        #            plt.savefig(filenamefig+'2.png')
-        #            plt.show()
-        #        else:
-        #            plt.savefig(filenamefig+'2.png')
+        
+        if verbose:
+            print(str("Total time: %.4fs" % final_runtime_total))
+        
+        return j_reg_list[-1]
 
     def savetofile(self, filename='lastneuralnet'):
         # =============================================================================

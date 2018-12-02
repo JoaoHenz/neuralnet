@@ -1,7 +1,10 @@
+from result import Result
 import numpy as np
 import pandas as pd
-from . import neuralnet as nn
+import time
+import neuralnet as nn
 import math
+import statistics
 from sklearn.metrics import confusion_matrix
 
 def string_erro_gradients(list_numeric_gradients, list_back_gradients):
@@ -236,13 +239,16 @@ def transform_y(dataset, y_column):
 
     return df, classes_transform
 
-def k_fold_training(k, dataset, y_column, epochs, batch_size, hidden_lengths = [24, 24], fator_reg = 0.25):
+def k_fold_training(k, dataset, y_column, epochs, batch_size, hidden_lengths = [24, 24], fator_reg = 0.25, alpha = 0.1, verbose = True):
+    start_runtime_total = time.time()
     folds_original = stratified_k_fold(k, y_column, dataset)
     cm_list = []
-    accuracy_list = []
-
-    print("###### K-FOLD RUNNING ######")
-    print()
+    acc_list = []
+    j_list = []
+    
+    if verbose:
+        print("###### K-FOLD RUNNING ######")
+        print()
 
     for i in range(k):
         folds = folds_original.copy()
@@ -261,22 +267,44 @@ def k_fold_training(k, dataset, y_column, epochs, batch_size, hidden_lengths = [
         num_input = dataset.shape[1]-1
         num_output = len(np.unique(dataset.iloc[:,y_column]))
 
-        net = nn.NeuralNet(X_train, y_train, num_entrada = num_input, num_saida = num_output, hidden_lengths = hidden_lengths, fator_reg = fator_reg)
-        print()
-        print("###### TRAINING - " + str(i+1) + "/" + str(k) + " folds ######")
-        net.fit(epochs = epochs, batch_size = batch_size)
-
-        print()
-        print("###### TESTING ######")
-        print()
+        net = nn.NeuralNet(X_train, 
+                           y_train,
+                           learning_rate = alpha,
+                           num_entrada = num_input, 
+                           num_saida = num_output, 
+                           hidden_lengths = hidden_lengths, 
+                           fator_reg = fator_reg)
+        if verbose:
+            print()
+            print("###### TRAINING - " + str(i+1) + "/" + str(k) + " folds ######")
+        j = net.fit(epochs = epochs, batch_size = batch_size, verbose = verbose)
+        j_list.append(j)
+        
+        if verbose:
+            print()
+            print("###### TESTING ######")
+            print()
         y_pred = net.classify(X_test)
 
         # Resultado do classificador
         classifier_result = y_pred == y_test
         accuracy = np.sum(classifier_result) / y_test.shape[0]
-        print("Parcial Accuracy: " + str("%.3f" % accuracy))
-        accuracy_list.append(accuracy)
+        if verbose:
+            print("Parcial Accuracy: " + str("%.3f" % accuracy))
+        acc_list.append(accuracy)
         cm = confusion_matrix(y_test, y_pred)
         cm_list.append(cm)
+        
+    f1 = f1measure_emlista(np.array(cm_list), 1)
+    acc_std = statistics.stdev(acc_list)
+    acc_mean = statistics.mean(acc_list)
+    j_std = statistics.stdev(j_list)
+    j_mean = statistics.mean(j_list)
 
-    return accuracy_list, cm_list
+    result = Result(f1, acc_mean, acc_std, j_mean, j_std)
+    
+    final_runtime_total = time.time() - start_runtime_total
+    if verbose:
+        print(str("Total time: %.4fs" % final_runtime_total))
+    
+    return result

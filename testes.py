@@ -1,5 +1,5 @@
-import t2_libs.generallib as gl
-import t2_libs.neuralnet as nn
+import generallib as gl
+import neuralnet as nn
 import click
 
 @click.command()
