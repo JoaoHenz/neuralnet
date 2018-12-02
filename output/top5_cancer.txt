@@ -51,8 +51,8 @@ Fator Reg: 0.5
 F1: 0.8973633669011015
 Acc Mean: 0.8933333333333333
 Acc Std: 0.11251437672464029
-J Mean: nan
-J Std: nan
+J Mean: 0.784568745878812
+J Std: 0.5874698785412545
 Num Hidden Layers: 2
 Nodes/Hidden Layer: 24
 Learning Rate: 0.5
