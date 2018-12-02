@@ -1,0 +1,62 @@
+Top 5 parametros para o dataset data/cancer.csv:
+
+F1: 0.9186527228480609
+Acc Mean: 0.9167145135566188
+Acc Std: 0.06671497087982893
+J Mean: 1.534252427652991
+J Std: 3.1162050055307327
+Num Hidden Layers: 2
+Nodes/Hidden Layer: 24
+Learning Rate: 0.3
+Fator Reg: 0.1
+
+
+
+F1: 0.9162018474672322
+Acc Mean: 0.9130143540669856
+Acc Std: 0.08020889947881742
+J Mean: 0.8393887584860344
+J Std: 0.13902027190875005
+Num Hidden Layers: 1
+Nodes/Hidden Layer: 24
+Learning Rate: 0.1
+Fator Reg: 0.25
+
+
+
+F1: 0.9118549361024781
+Acc Mean: 0.9000956937799043
+Acc Std: 0.1351091146979649
+J Mean: 0.5429802267502224
+J Std: 0.08490422754859818
+Num Hidden Layers: 1
+Nodes/Hidden Layer: 15
+Learning Rate: 0.3
+Fator Reg: 0.1
+
+
+
+F1: 0.9074721717652915
+Acc Mean: 0.8947687400318979
+Acc Std: 0.1400093673456114
+J Mean: 0.9222073904358219
+J Std: 0.6653130116423531
+Num Hidden Layers: 1
+Nodes/Hidden Layer: 10
+Learning Rate: 0.3
+Fator Reg: 0.5
+
+
+
+F1: 0.8973633669011015
+Acc Mean: 0.8933333333333333
+Acc Std: 0.11251437672464029
+J Mean: nan
+J Std: nan
+Num Hidden Layers: 2
+Nodes/Hidden Layer: 24
+Learning Rate: 0.5
+Fator Reg: 0.1
+
+
+

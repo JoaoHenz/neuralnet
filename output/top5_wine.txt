@@ -1,0 +1,62 @@
+Top 5 parametros para o dataset data/wine.csv:
+
+F1: 0.9659300914047678
+Acc Mean: 0.9611111111111111
+Acc Std: 0.08705673535957896
+J Mean: 1.278597076992225
+J Std: 0.09103870808833063
+Num Hidden Layers: 1
+Nodes/Hidden Layer: 24
+Learning Rate: 0.3
+Fator Reg: 0.25
+
+
+
+F1: 0.9648612917970535
+Acc Mean: 0.9611111111111111
+Acc Std: 0.05270462766947298
+J Mean: 1.0439926022992654
+J Std: 0.09620207688118158
+Num Hidden Layers: 1
+Nodes/Hidden Layer: 24
+Learning Rate: 0.5
+Fator Reg: 0.25
+
+
+
+F1: 0.9577155850728912
+Acc Mean: 0.9588888888888889
+Acc Std: 0.04997941963279762
+J Mean: 1.3585262103952633
+J Std: 0.11892525906023718
+Num Hidden Layers: 1
+Nodes/Hidden Layer: 10
+Learning Rate: 0.5
+Fator Reg: 0.25
+
+
+
+F1: 0.9608836132309454
+Acc Mean: 0.9555555555555555
+Acc Std: 0.05105203241514896
+J Mean: 1.3078440776783937
+J Std: 0.13895065713617738
+Num Hidden Layers: 1
+Nodes/Hidden Layer: 15
+Learning Rate: 0.5
+Fator Reg: 0.5
+
+
+
+F1: 0.9541480643308917
+Acc Mean: 0.95
+Acc Std: 0.0409924881873679
+J Mean: 1.2140361776664077
+J Std: 0.1272638317377177
+Num Hidden Layers: 1
+Nodes/Hidden Layer: 24
+Learning Rate: 0.3
+Fator Reg: 0.1
+
+
+
