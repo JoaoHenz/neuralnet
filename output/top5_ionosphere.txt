@@ -1,0 +1,62 @@
+Top 5 parametros para o dataset data/ionosphere.csv:
+
+F1: 0.8288849388870114
+Acc Mean: 0.8342857142857143
+Acc Std: 0.058398894159070035
+J Mean: 0.7973887525813201
+J Std: 0.0482337025008903
+Num Hidden Layers: 1
+Nodes/Hidden Layer: 24
+Learning Rate: 0.5
+Fator Reg: 0.25
+
+
+
+F1: 0.8235181557519693
+Acc Mean: 0.8314285714285714
+Acc Std: 0.03915200912589419
+J Mean: 0.747683161030748
+J Std: 0.04649951090873671
+Num Hidden Layers: 1
+Nodes/Hidden Layer: 24
+Learning Rate: 0.5
+Fator Reg: 0.1
+
+
+
+F1: 0.8107073114650525
+Acc Mean: 0.8171428571428572
+Acc Std: 0.06346030951983876
+J Mean: 0.8905798134510791
+J Std: 0.07876898036288592
+Num Hidden Layers: 1
+Nodes/Hidden Layer: 10
+Learning Rate: 0.5
+Fator Reg: 0.1
+
+
+
+F1: 0.8060160690291147
+Acc Mean: 0.8085714285714286
+Acc Std: 0.05722216718399923
+J Mean: 0.8886956115358199
+J Std: 0.04259479508014495
+Num Hidden Layers: 1
+Nodes/Hidden Layer: 24
+Learning Rate: 0.5
+Fator Reg: 0.5
+
+
+
+F1: 0.7995217458812138
+Acc Mean: 0.8057142857142857
+Acc Std: 0.05353702599068644
+J Mean: 0.8849799367322713
+J Std: 0.07683451140813022
+Num Hidden Layers: 1
+Nodes/Hidden Layer: 15
+Learning Rate: 0.5
+Fator Reg: 0.25
+
+
+
