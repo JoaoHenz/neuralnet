@@ -3,16 +3,16 @@ from result import Result
 import generallib as gl
 import matplotlib.pyplot as plt
 
-y_column = 0
-filename = "data/wine.csv"
+y_column = -1
+filename = "data/pima.csv"
 dataset = pd.read_csv(filename)
 dataset, transformation = gl.transform_y(dataset, y_column)
 dataset = dataset.sample(frac=1).reset_index(drop=True)
 
 num_kfolds = 10
-epochs = 5
+epochs = 30
 batch_size = 10
-network = [24]
+network = [5]
 fator_reg = 0.25
 alpha = 0.3
 
