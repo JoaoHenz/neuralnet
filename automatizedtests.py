@@ -5,7 +5,7 @@ import pandas as pd
 import generallib as gl
 
 y_column = -1
-filename = "data/ionosphere.csv"
+filename = "data/pima.csv"
 dataset = pd.read_csv(filename)
 dataset, transformation = gl.transform_y(dataset, y_column)
 

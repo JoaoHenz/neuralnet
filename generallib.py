@@ -99,7 +99,7 @@ def stratified_k_fold(k_folds, y_column, dataframe):
 
     for c in classes:
         total_rows_class = np.sum(y.iloc[:] == c)
-        num = int(round(total_rows_class/k_folds))
+        num = int(math.floor(total_rows_class/k_folds))
         num_per_fold[c] = num
         index = y[y.iloc[:] == c].index
         classes_index[c] = index
