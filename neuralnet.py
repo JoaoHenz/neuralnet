@@ -151,7 +151,7 @@ class NeuralNet(object):
 
     def feedforward(self, row_number):
         # =============================================================================
-        # Feedforward da rede para uma instcncia de exemplo
+        # Feedforward da rede para uma instância de exemplo
         # =============================================================================
         # Input Layer - Coloca o vetor de entrada "i" como sendo a matriz de ativaco da camada 0
         self.activations[0][1:] = np.transpose(np.array([self.data[row_number,:]]))
